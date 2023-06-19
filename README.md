@@ -1,6 +1,6 @@
 ![banner](https://user-images.githubusercontent.com/4198311/89027545-461dd180-d35d-11ea-9972-7bf1b07f942d.png)
 
-# John Raytracing 2023
+# John Ray Tracing 2023
 
 ![GitHub top language](https://img.shields.io/github/languages/top/Danny2003/John-Raytracing-2023)
 ![License](https://img.shields.io/github/license/Danny2003/John-Raytracing-2023)
@@ -40,7 +40,7 @@
 
 ## 导言
 
-　　Welcome to Raytracing 2023 ! 
+　　Welcome to Ray Tracing 2023 ! 
    
    本项目主要内容为学习 Rust 语言并实现一个光线追踪渲染器（基于路径追踪算法）。以这个形式，你能通过学习一门新的（而且漂亮的）语言—— Rust 来加深对编程语言设计、编译原理的理解，同时又能趣味性地了解 Computer Graphics 的基础工作。项目设有 presentation 和结课展示环节。使用自己手写的渲染器，发挥艺术才能，创造出惊艳全场的超现实大作吧！
 
