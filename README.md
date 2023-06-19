@@ -1,6 +1,6 @@
 ![banner](https://user-images.githubusercontent.com/4198311/89027545-461dd180-d35d-11ea-9972-7bf1b07f942d.png)
 
-# PPCA Raytracer 2023
+# John Raytracing 2023
 
 ![GitHub top language](https://img.shields.io/github/languages/top/Danny2003/John-Raytracing-2023)
 ![License](https://img.shields.io/github/license/Danny2003/John-Raytracing-2023)
@@ -40,11 +40,13 @@
 
 ## 导言
 
-　　本项目主要内容为学习 Rust 语言并实现一个光线追踪渲染器（基于路径追踪算法）。以这个形式，你能通过学习一门新的（而且漂亮的）语言—— Rust 来加深对编程语言设计、编译原理的理解，同时又能趣味性地了解 Computer Graphics 的基础工作。项目设有 presentation 和结课展示环节。使用自己手写的渲染器，发挥艺术才能，创造出惊艳全场的超现实大作吧！
+　　Welcome to Raytracing 2023 ! 
+   
+   本项目主要内容为学习 Rust 语言并实现一个光线追踪渲染器（基于路径追踪算法）。以这个形式，你能通过学习一门新的（而且漂亮的）语言—— Rust 来加深对编程语言设计、编译原理的理解，同时又能趣味性地了解 Computer Graphics 的基础工作。项目设有 presentation 和结课展示环节。使用自己手写的渲染器，发挥艺术才能，创造出惊艳全场的超现实大作吧！
 
 　　下文中 `something` 表示命令行指令或文件，💠 标记表示该条目为进阶内容。
 
-　　Welcome! 你可以直接点击网页右上角的 “Use this template” 绿色按钮将这个项目复制到自己的 GitHub Profile 中。接下来，你需要做一些准备工作。
+　　你可以直接点击网页右上角的 “Use this template” 绿色按钮将这个项目复制到自己的 GitHub Profile 中。接下来，你需要做一些准备工作。
 
 ---
 
@@ -188,4 +190,7 @@
 
 ## 致谢
 
-    本项目的最初创建者是[Alex Chi 学长](https://github.com/aik2mlj/)。ACM 班沿用该项目多年，例如 2022 年的 [PPCA-Raytracer-2022](https://github.com/ACMClassCourse-2021/PPCA-Raytracer-2022)。John 班在 2021 年也使用了该项目，见[raytracer-tutorial](https://github.com/Mighty-A/raytracer-tutorial)。我们基于前人经验，根据 2022 级 John 班的需求，进行了一些调整。感谢 Alex Chi 学长和 ACM 班前辈们的宝贵经验和付出！
+    本项目的最初创建者是[Alex Chi 学长](https://github.com/aik2mlj/)。
+    ACM 班沿用该项目多年，例如 2022 年的 [PPCA-Raytracer-2022](https://github.com/ACMClassCourse-2021/PPCA-Raytracer-2022)。
+    John 班在 2021 年也使用了该项目，见[raytracer-tutorial](https://github.com/Mighty-A/raytracer-tutorial)。
+    我们基于前人经验，根据 2022 级 John 班的需求，进行了一些调整。感谢 Alex Chi 学长和 ACM 班前辈们的宝贵经验和付出！
