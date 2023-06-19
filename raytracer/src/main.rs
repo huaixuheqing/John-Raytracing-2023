@@ -6,7 +6,7 @@ use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
 use std::fs::File;
 
-const AUTHOR: &str = "Kr.Cen";
+const AUTHOR: &str = "Kr Cen";
 
 fn is_ci() -> bool {
     option_env!("CI").unwrap_or_default() == "true"
