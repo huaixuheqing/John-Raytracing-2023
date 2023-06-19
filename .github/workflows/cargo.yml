@@ -1,12 +1,9 @@
 on:
   push:
-    branches:
-    - master
-  pull_request:
-    branches:
-    - master
+    tags:
+      - "*"
 
-name: CI
+name: CI # Continuous Integration
 
 jobs:
   lint:
@@ -42,8 +39,8 @@ jobs:
         name: Checkout 🛎️
       - uses: actions-rs/toolchain@v1
         name: Setup Cargo Toolchain 🛎️
-      - name: Download Dependencies 🛎️
-        run: wget https://github.com/google/fonts/raw/master/ofl/encodesans/static/EncodeSans-Regular.ttf
+      # - name: Download Dependencies 🛎️
+      #   run: wget https://github.com/google/fonts/raw/master/ofl/encodesans/static/EncodeSans-Regular.ttf
       - uses: actions-rs/cargo@v1
         name: Build 🔧
         with:
