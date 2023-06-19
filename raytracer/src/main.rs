@@ -28,7 +28,7 @@ fn main() {
     let width: usize = 800;
     let height: usize = ((width as f64) / aspect_ratio) as usize;
     let path = "output/book1_image2.jpg";
-    let quality = 60; // From 0 to 100
+    let quality = 80; // From 0 to 100
 
     let viewport_height = 2.0;
     let viewport_width = aspect_ratio * viewport_height;
