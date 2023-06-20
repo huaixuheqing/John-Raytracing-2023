@@ -136,7 +136,7 @@
 
 - [ ] **Track1: 自己设计的艺术品**
 - [ ] **Track2: Advanced Program Features**
-  请参考 [Alex Chi 学长设计的内容](https://github.com/aik2mlj/raytracer-tutorial#advanced-features)
+  请参考 [Alex Chi 学长设计的内容](https://github.com/skyzh/raytracer-tutorial#task-2-advanced-ray-tracer)
 - [ ] **Track3: GPU-based RayTracing**
   实时光线追踪（需要支持DXR技术的GPU > GTX1060）。
 - [ ] 其他更 exciting 的 idea！
@@ -191,10 +191,10 @@
 
 ## 致谢
 
-　　本项目的最初创建者是[Alex Chi 学长](https://github.com/aik2mlj/)。
+　　本项目的最初创建者是 [Alex Chi](https://github.com/skyzh/) 学长。
 
 　　ACM 班沿用该项目多年，例如 2022 年的 [PPCA-Raytracer-2022](https://github.com/ACMClassCourse-2021/PPCA-Raytracer-2022)。
 
-　　John 班在 2021 年也使用了该项目，见[raytracer-tutorial](https://github.com/Mighty-A/raytracer-tutorial)。
+　　John 班在 2021 年也使用了该项目，见 [raytracer-tutorial](https://github.com/Mighty-A/raytracer-tutorial)。
 
 　　我们基于前人经验，根据 2022 级 John 班的需求，进行了一些调整。感谢 Alex Chi 学长和 ACM 班前辈们的宝贵经验和付出！
