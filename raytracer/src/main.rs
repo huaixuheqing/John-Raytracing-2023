@@ -7,7 +7,7 @@ use indicatif::ProgressBar;
 use std::fs::File;
 pub use vec3::Vec3;
 
-const AUTHOR: &str = "Your name";
+const AUTHOR: &str = "Siyuan Huang";
 
 fn is_ci() -> bool {
     option_env!("CI").unwrap_or_default() == "true"
