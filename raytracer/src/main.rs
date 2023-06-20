@@ -14,7 +14,7 @@ fn is_ci() -> bool {
 }
 
 fn main() {
-    // get environment variable CI, which is true for GitHub Action
+    // get environment variable CI, which is true for GitHub Actions
     let is_ci = is_ci();
 
     println!("CI: {}", is_ci);
@@ -22,12 +22,14 @@ fn main() {
     let height: usize = 800;
     let width: usize = 800;
     let path = "output/test.jpg";
-    let quality = 60; // From 0 to 100
+    let quality = 60; // From 0 to 100, suggested value: 60
 
     // Create image data
     let mut img: RgbImage = ImageBuffer::new(width.try_into().unwrap(), height.try_into().unwrap());
 
     // Progress bar UI powered by library `indicatif`
+    // You can use indicatif::ProgressStyle to make it more beautiful
+    // You can also use indicatif::MultiProgress in multi-threading to show progress of each thread
     let bar = if is_ci {
         ProgressBar::hidden()
     } else {
@@ -46,7 +48,9 @@ fn main() {
         }
     }
 
+    // Finish progress bar
     bar.finish();
+
     // Output image to file
     println!("Ouput image as \"{}\"\n Author: {}", path, AUTHOR);
     let output_image = image::DynamicImage::ImageRgb8(img);

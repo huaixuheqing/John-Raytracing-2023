@@ -32,8 +32,7 @@
     | **Task 4** | 10%                                   |
     | **Task 5** | 10%                                   |
     | **进阶内容** | 10% *（5% 作为基本分，5% 作为 Bonus）*   |
-    | **presentation** | 5% *（作为 Bonus，总分不溢出 100%）* |
-    | **结课展示**   | 5% *（作为 Bonus，总分不溢出 100%）* |
+    | **presentation 与 结课展示** | 5% *（作为 Bonus，总分不溢出 100%）* |
     | **code review** | 5% *（基本给满，代码风格太差酌情扣分）* |
 
 ---
@@ -42,7 +41,7 @@
 
 　　Welcome to Ray Tracing 2023 ! 
    
-   本项目主要内容为学习 Rust 语言并实现一个光线追踪渲染器（基于路径追踪算法）。以这个形式，你能通过学习一门新的（而且漂亮的）语言—— Rust 来加深对编程语言设计、编译原理的理解，同时又能趣味性地了解 Computer Graphics 的基础工作。项目设有 presentation 和结课展示环节。使用自己手写的渲染器，发挥艺术才能，创造出惊艳全场的超现实大作吧！
+　　本项目主要内容为学习 Rust 语言并实现一个光线追踪渲染器（基于路径追踪算法）。以这个形式，你能通过学习一门新的（而且漂亮的）语言—— Rust 来加深对编程语言设计、编译原理的理解，同时又能趣味性地了解 Computer Graphics 的基础工作。项目设有 presentation 和结课展示环节。使用自己手写的渲染器，发挥艺术才能，创造出惊艳全场的超现实大作吧！
 
 　　下文中 `something` 表示命令行指令或文件，💠 标记表示该条目为进阶内容。
 
@@ -82,7 +81,7 @@
 - Rust 的面向对象特性（trait，对应 C++ 的类）可以在 10.2 中找到
 - 涉及到多线程渲染时，你可以阅读第 15、16 章的内容
 
-为了快速上手语法，你可以使用 Rust 语言完成以下[力扣（LeetCode）网站](https://leetcode.cn/)练习：
+为了快速上手语法，你可以使用 Rust 语言完成以下[力扣（LeetCode）网站](https://leetcode.cn/)练习（不检查）：
 
 - [ ] [88. 合并两个有序数组](https://leetcode.cn/problems/merge-sorted-array/)
 - [ ] [2181. 合并零之间的节点](https://leetcode.cn/problems/merge-nodes-in-between-zeros/)
@@ -140,7 +139,7 @@
   实时光线追踪（需要支持DXR技术的GPU > GTX1060）。
 - [ ] 其他更 exciting 的 idea！
 
-最终成果形式不限，可以是一张图、一份实验报告或一场展示。标记💠的进阶部分除了自主设计艺术品外的大部分内容 John 班的助教们也没有实现过，因此请同学们自主学习，只要写出了除了自主设计艺术品外任意一项进阶部分即可给满分，自主设计艺术品可以拿到进阶部分基本分，最后结课展示时大家互评艺术品，评分最高的三个同学分别可以拿到进阶部分分数 5 分，4 分，3 分的 bonus。
+最终成果形式不限，可以是一张图、一份实验报告或一场展示。标记💠的进阶部分除了自主设计艺术品外的大部分内容 John 班的助教们也没有实现过，因此请同学们自主学习，只要写出了除了自主设计艺术品/自主配置 Github Actions 外任意一项进阶部分即可给满分，自主设计艺术品可以拿到进阶部分基本分，最后结课展示时大家互评艺术品，评分最高的三个同学分别可以拿到进阶部分分数 5 分，4 分，3 分的 bonus。
 
 ## Deadline 4: 2023-07-15 23:59（注意是最后一周**周六**）
 
@@ -190,7 +189,10 @@
 
 ## 致谢
 
-    本项目的最初创建者是[Alex Chi 学长](https://github.com/aik2mlj/)。
-    ACM 班沿用该项目多年，例如 2022 年的 [PPCA-Raytracer-2022](https://github.com/ACMClassCourse-2021/PPCA-Raytracer-2022)。
-    John 班在 2021 年也使用了该项目，见[raytracer-tutorial](https://github.com/Mighty-A/raytracer-tutorial)。
-    我们基于前人经验，根据 2022 级 John 班的需求，进行了一些调整。感谢 Alex Chi 学长和 ACM 班前辈们的宝贵经验和付出！
+　　本项目的最初创建者是[Alex Chi 学长](https://github.com/aik2mlj/)。
+
+　　ACM 班沿用该项目多年，例如 2022 年的 [PPCA-Raytracer-2022](https://github.com/ACMClassCourse-2021/PPCA-Raytracer-2022)。
+
+　　John 班在 2021 年也使用了该项目，见[raytracer-tutorial](https://github.com/Mighty-A/raytracer-tutorial)。
+
+　　我们基于前人经验，根据 2022 级 John 班的需求，进行了一些调整。感谢 Alex Chi 学长和 ACM 班前辈们的宝贵经验和付出！
