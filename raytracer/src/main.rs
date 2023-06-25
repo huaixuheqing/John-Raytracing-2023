@@ -1,5 +1,5 @@
 const infinity: f64 = f64::INFINITY;
-const pi: f64 = 3.1415926535897932385;
+const pi: f64 = 3.141_592_653_589_793;
 
 mod Camera;
 mod Hittable;
@@ -15,13 +15,13 @@ pub use crate::rtweekend::random_f64;
 use crate::rtweekend::random_f64_1;
 use crate::Sphere::sphere;
 use color::write_color;
-use image::error::UnsupportedErrorKind::Color;
+
 use image::{ImageBuffer, RgbImage};
 use indicatif::ProgressBar;
 pub use rtweekend::degrees_to_radians;
-use std::borrow::Borrow;
+
 use std::fs::File;
-use std::ops::Mul;
+
 pub use std::sync::Arc;
 pub use std::vec;
 pub use vec3::Color1;
@@ -58,21 +58,21 @@ fn ray_color(r: &ray, world: &hittable_list, depth: i32) -> Vec3 {
             .unwrap()
             .scatter(r, &mut rec, &mut attenuation, &mut scattered)
         {
-            return ray_color(&scattered, &world, depth - 1).elemul(attenuation);
+            return ray_color(&scattered, world, depth - 1).elemul(attenuation);
         }
         return Color1::new(0.0, 0.0, 0.0);
         //let mut target = rec.p.clone() + rec.normal.clone() + Vec3::random_in_hemisphere(&rec.normal);
         //return ray_color(&ray::new(rec.p.clone(),target - rec.p.clone()), &world, depth - 1) * 0.5;
     }
-    let mut unit_direction = r.dir.unit_vector();
-    let mut t = 0.5 * (unit_direction.y() + 1.0);
+    let unit_direction = r.dir.unit_vector();
+    let t = 0.5 * (unit_direction.y() + 1.0);
     Color1::new(1.0, 1.0, 1.0) * (1.0 - t) + Color1::new(0.5, 0.7, 1.0) * t
 }
 
 fn random_scene() -> hittable_list {
     let mut world = hittable_list::new();
 
-    let mut ground_material: Option<Arc<dyn material>> =
+    let ground_material: Option<Arc<dyn material>> =
         Some(Arc::new(lambertian::new(&Color1::new(0.5, 0.5, 0.5))));
     world.add(Some(Arc::new(sphere::new(
         Point3::new(0.0, -1000.0, 0.0),
@@ -89,8 +89,8 @@ fn random_scene() -> hittable_list {
                 b as f64 + 0.9 * random_f64(),
             );
 
-            if (center.clone() - Point3::new(4.0, 0.2, 0.0)).length() > 0.9 {
-                let mut sphere_material: Option<Arc<dyn material>>;
+            if (center - Point3::new(4.0, 0.2, 0.0)).length() > 0.9 {
+                let sphere_material: Option<Arc<dyn material>>;
 
                 if choose_mat < 0.8 {
                     let albedo = Color1::random().elemul(Color1::random());
@@ -131,7 +131,7 @@ fn random_scene() -> hittable_list {
         material3,
     ))));
 
-    return world;
+    world
 }
 
 fn main() {
@@ -162,7 +162,7 @@ fn main() {
     };
 
     // World
-    let mut world = random_scene();
+    let world = random_scene();
 
     // Camera
     let lookfrom = Point3::new(13.0, 2.0, 3.0);
@@ -184,10 +184,10 @@ fn main() {
     for j in 0..height {
         for i in 0..width {
             let mut pixel_color = Color1::new(0.0, 0.0, 0.0);
-            for s in 0..samples_per_pixel {
-                let mut u = (i as f64 + random_f64()) / (width - 1) as f64;
-                let mut v = (j as f64 + random_f64()) / (height - 1) as f64;
-                let mut r = cam.get_ray(u, v);
+            for _s in 0..samples_per_pixel {
+                let u = (i as f64 + random_f64()) / (width - 1) as f64;
+                let v = (j as f64 + random_f64()) / (height - 1) as f64;
+                let r = cam.get_ray(u, v);
                 pixel_color += ray_color(&r, &world, max_depth);
             }
             write_color(&pixel_color, &mut img, i, height - j - 1, samples_per_pixel);

@@ -17,11 +17,11 @@ impl hittable_list {
     }
 
     pub fn clear(&mut self) {
-        (*self).objects.clear();
+        self.objects.clear();
     }
 
     pub fn add(&mut self, object: Option<Arc<dyn hittable>>) {
-        (*self).objects.push(object);
+        self.objects.push(object);
     }
 
     pub fn hit(&self, r: &ray, t_min: f64, t_max: f64, rec: &mut hit_record) -> bool {
@@ -40,6 +40,6 @@ impl hittable_list {
                 *rec = temp_rec.clone();
             }
         }
-        return hit_anything;
+        hit_anything
     }
 }

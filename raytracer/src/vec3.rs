@@ -198,19 +198,19 @@ impl Vec3 {
     }
 
     pub fn random() -> Vec3 {
-        return Vec3::new(random_f64(), random_f64(), random_f64());
+        Vec3::new(random_f64(), random_f64(), random_f64())
     }
 
     pub fn random1(min: f64, max: f64) -> Vec3 {
-        return Vec3::new(
+        Vec3::new(
             random_f64_1(min, max),
             random_f64_1(min, max),
             random_f64_1(min, max),
-        );
+        )
     }
 
     pub fn random_in_unit_sphere() -> Vec3 {
-        while true {
+        loop {
             let p = Vec3::random1(-1.0, 1.0);
             if p.length_squared() >= 1.0 {
                 continue;
@@ -218,34 +218,34 @@ impl Vec3 {
                 return p;
             }
         }
-        return Vec3::new(0.0, 0.0, 0.0);
+        Vec3::new(0.0, 0.0, 0.0)
     }
 
     pub fn random_unit_vector() -> Vec3 {
-        return Vec3::random_in_unit_sphere().unit_vector();
+        Vec3::random_in_unit_sphere().unit_vector()
     }
 
     pub fn random_in_hemisphere(normal: &Vec3) -> Vec3 {
         let in_unit_sphere = Vec3::random_in_unit_sphere();
         if in_unit_sphere * *normal > 0.0 {
-            return in_unit_sphere;
+            in_unit_sphere
         } else {
-            return -in_unit_sphere;
+            -in_unit_sphere
         }
     }
 
     pub fn near_zero(&self) -> bool {
         let s = 1e-8;
-        return ((*self).x < s)
-            && ((*self).x > -s)
-            && ((*self).y < s)
-            && ((*self).y > -s)
-            && ((*self).z < s)
-            && ((*self).z > -s);
+        (self.x < s)
+            && (self.x > -s)
+            && (self.y < s)
+            && (self.y > -s)
+            && (self.z < s)
+            && (self.z > -s)
     }
 
     pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
-        return v.clone() - n.clone() * 2.0 * (v.clone() * n.clone());
+        *v - *n * 2.0 * (*v * *n)
     }
 
     pub fn elemul(self, other: Self) -> Self {
@@ -258,17 +258,17 @@ impl Vec3 {
 
     pub fn refract(uv: &Vec3, n: &Vec3, etai_over_etat: f64) -> Vec3 {
         let mut cos_theta = 1.0;
-        if ((-uv.clone()) * n.clone()) < 1.0 {
-            cos_theta = (-uv.clone()) * n.clone();
+        if ((-*uv) * *n) < 1.0 {
+            cos_theta = (-*uv) * *n;
         }
-        let mut r_out_perp = (uv.clone() + *n * cos_theta) * etai_over_etat;
+        let r_out_perp = (*uv + *n * cos_theta) * etai_over_etat;
         let mut r_out_parallel = Vec3::new(0.0, 0.0, 0.0);
         if 1.0 > r_out_perp.length_squared() {
-            r_out_parallel = n.clone() * (-(1.0 - r_out_perp.length_squared()).sqrt());
+            r_out_parallel = *n * (-(1.0 - r_out_perp.length_squared()).sqrt());
         } else {
-            r_out_parallel = n.clone() * (-(r_out_perp.length_squared() - 1.0).sqrt());
+            r_out_parallel = *n * (-(r_out_perp.length_squared() - 1.0).sqrt());
         }
-        return r_out_perp + r_out_parallel;
+        r_out_perp + r_out_parallel
     }
 
     pub fn cross(u: &Vec3, v: &Vec3) -> Vec3 {
@@ -281,14 +281,14 @@ impl Vec3 {
 
     pub fn random_in_unit_disk() -> Vec3 {
         let mut p = Vec3::new(0.0, 0.0, 0.0);
-        while true {
+        loop {
             p = Vec3::new(random_f64_1(-1.0, 1.0), random_f64_1(-1.0, 1.0), 0.0);
             if p.clone().length_squared() >= 1.0 {
                 continue;
             };
             return p;
         }
-        return p;
+        p
     }
 }
 

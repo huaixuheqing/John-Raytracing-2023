@@ -25,11 +25,11 @@ impl hit_record {
     }
 
     pub fn set_face_normal(&mut self, r: &ray, outward_normal: &Vec3) {
-        self.front_face = (r.direction() * outward_normal.clone() < 0.0);
+        self.front_face = r.direction() * *outward_normal < 0.0;
         if self.front_face {
-            self.normal = outward_normal.clone();
+            self.normal = *outward_normal;
         } else {
-            self.normal = -outward_normal.clone();
+            self.normal = -*outward_normal;
         }
     }
 }

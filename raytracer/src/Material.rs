@@ -20,25 +20,25 @@ pub struct lambertian {
 
 impl lambertian {
     pub fn new(a: &Color1) -> Self {
-        Self { albedo: a.clone() }
+        Self { albedo: *a }
     }
 }
 
 impl material for lambertian {
     fn scatter(
         &self,
-        r_in: &ray,
+        _r_in: &ray,
         rec: &mut hit_record,
         attenuation: &mut Color1,
         scattered: &mut ray,
     ) -> bool {
-        let mut scatter_direction = rec.normal.clone() + Vec3::random_unit_vector();
+        let mut scatter_direction = rec.normal + Vec3::random_unit_vector();
         if scatter_direction.near_zero() {
-            scatter_direction = rec.normal.clone();
+            scatter_direction = rec.normal;
         }
-        *scattered = ray::new(rec.p.clone(), scatter_direction);
-        *attenuation = (*self).albedo.clone();
-        return true;
+        *scattered = ray::new(rec.p, scatter_direction);
+        *attenuation = self.albedo;
+        true
     }
 }
 
@@ -54,7 +54,7 @@ impl medal {
             b = f;
         }
         Self {
-            albedo: a.clone(),
+            albedo: *a,
             fuzz: b,
         }
     }
@@ -70,11 +70,11 @@ impl material for medal {
     ) -> bool {
         let reflected = Vec3::reflect(&r_in.direction().unit_vector().clone(), &rec.normal.clone());
         *scattered = ray::new(
-            rec.p.clone(),
-            reflected + Vec3::random_in_unit_sphere() * (*self).fuzz,
+            rec.p,
+            reflected + Vec3::random_in_unit_sphere() * self.fuzz,
         );
-        *attenuation = (*self).albedo;
-        return (scattered.direction() * rec.normal.clone()) > 0.0;
+        *attenuation = self.albedo;
+        (scattered.direction() * rec.normal) > 0.0
     }
 }
 
@@ -92,7 +92,7 @@ impl dielectric {
     pub fn reflectance(cosine: f64, ref_idx: f64) -> f64 {
         let mut r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
         r0 = r0 * r0;
-        return r0 + (1.0 - r0) * (1.0 - cosine).powf(5.0);
+        r0 + (1.0 - r0) * (1.0 - cosine).powf(5.0)
     }
 }
 
@@ -107,18 +107,18 @@ impl material for dielectric {
         *attenuation = Color1::new(1.0, 1.0, 1.0);
         let mut refraction_ratio = 0.0;
         if rec.front_face {
-            refraction_ratio = 1.0 / (*self).ir;
+            refraction_ratio = 1.0 / self.ir;
         } else {
-            refraction_ratio = (*self).ir;
+            refraction_ratio = self.ir;
         }
 
-        let mut unit_direction = r_in.direction().unit_vector();
+        let unit_direction = r_in.direction().unit_vector();
 
         let mut cos_theta = 1.0;
-        if ((-unit_direction.clone()) * rec.normal.clone()) < 1.0 {
-            cos_theta = ((-unit_direction.clone()) * rec.normal.clone());
+        if ((-unit_direction) * rec.normal) < 1.0 {
+            cos_theta = (-unit_direction) * rec.normal;
         }
-        let mut sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
+        let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
 
         let cannot_refract = (refraction_ratio * sin_theta) > 1.0;
         let mut direction = Vec3::new(0.0, 0.0, 0.0);
@@ -130,6 +130,6 @@ impl material for dielectric {
         }
 
         *scattered = ray::new(rec.p, direction);
-        return true;
+        true
     }
 }
