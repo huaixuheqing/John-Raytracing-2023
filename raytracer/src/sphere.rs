@@ -1,19 +1,19 @@
-use crate::hittable;
 use crate::vec3::Point3;
+use crate::Hittable;
 
-use crate::Hittable::hit_record;
-use crate::Material::material;
-use crate::Ray::ray;
+use crate::hittable::HitRecord;
+use crate::material::Material;
+use crate::ray::Ray;
 use std::sync::Arc;
 
-pub struct sphere {
+pub struct Sphere {
     pub center: Point3,
     pub radius: f64,
-    pub mat_ptr: Option<Arc<dyn material>>,
+    pub mat_ptr: Option<Arc<dyn Material>>,
 }
 
-impl sphere {
-    pub fn new(cen: Point3, r: f64, m: Option<Arc<dyn material>>) -> Self {
+impl Sphere {
+    pub fn new(cen: Point3, r: f64, m: Option<Arc<dyn Material>>) -> Self {
         Self {
             center: cen,
             radius: r,
@@ -22,8 +22,8 @@ impl sphere {
     }
 }
 
-impl hittable for sphere {
-    fn hit(&self, r: &ray, t_min: f64, t_max: f64, rec: &mut hit_record) -> bool {
+impl Hittable for Sphere {
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
         let oc = r.origin() - self.center;
         let a = r.direction().length_squared();
         let half_b = oc * r.direction();

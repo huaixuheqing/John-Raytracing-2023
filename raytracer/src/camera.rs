@@ -1,22 +1,22 @@
-use crate::{rtweekend, vec3, Ray};
+use crate::{ray, rtweekend, vec3};
 
+pub use ray::Ray;
 pub use rtweekend::degrees_to_radians;
 pub use vec3::Point3;
 pub use vec3::Vec3;
-pub use Ray::ray;
 
-pub struct camera {
+pub struct Camera {
     origin: Point3,
     lower_left_corner: Point3,
     horizontal: Vec3,
     vertical: Vec3,
     u: Vec3,
     v: Vec3,
-    w: Vec3,
+    pub w: Vec3,
     lens_radius: f64,
 }
 
-impl camera {
+impl Camera {
     pub fn new(
         lookfrom: &Point3,
         lookat: &Point3,
@@ -50,11 +50,11 @@ impl camera {
         }
     }
 
-    pub fn get_ray(&self, s: f64, t: f64) -> ray {
+    pub fn get_ray(&self, s: f64, t: f64) -> Ray {
         let rd = Vec3::random_in_unit_disk() * self.lens_radius;
         let offest = self.u * rd.x + self.v * rd.y;
 
-        ray::new(
+        Ray::new(
             self.origin + offest,
             self.lower_left_corner + self.horizontal * s + self.vertical * t - self.origin - offest,
         )

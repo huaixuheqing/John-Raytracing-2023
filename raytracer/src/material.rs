@@ -1,53 +1,53 @@
+use crate::hittable::HitRecord;
 use crate::vec3::Vec3;
-use crate::Hittable::hit_record;
-use crate::{random_f64, vec3, Ray};
+use crate::{random_f64, ray, vec3};
+pub use ray::Ray;
 use vec3::Color1;
-pub use Ray::ray;
 
-pub trait material {
+pub trait Material {
     fn scatter(
         &self,
-        r_in: &ray,
-        rec: &mut hit_record,
+        r_in: &Ray,
+        rec: &mut HitRecord,
         attenuation: &mut Color1,
-        scattered: &mut ray,
+        scattered: &mut Ray,
     ) -> bool;
 }
 
-pub struct lambertian {
+pub struct Lambertian {
     albedo: Color1,
 }
 
-impl lambertian {
+impl Lambertian {
     pub fn new(a: &Color1) -> Self {
         Self { albedo: *a }
     }
 }
 
-impl material for lambertian {
+impl Material for Lambertian {
     fn scatter(
         &self,
-        _r_in: &ray,
-        rec: &mut hit_record,
+        _r_in: &Ray,
+        rec: &mut HitRecord,
         attenuation: &mut Color1,
-        scattered: &mut ray,
+        scattered: &mut Ray,
     ) -> bool {
         let mut scatter_direction = rec.normal + Vec3::random_unit_vector();
         if scatter_direction.near_zero() {
             scatter_direction = rec.normal;
         }
-        *scattered = ray::new(rec.p, scatter_direction);
+        *scattered = Ray::new(rec.p, scatter_direction);
         *attenuation = self.albedo;
         true
     }
 }
 
-pub struct medal {
+pub struct Medal {
     albedo: Color1,
     fuzz: f64,
 }
 
-impl medal {
+impl Medal {
     pub fn new(a: &Color1, f: f64) -> Self {
         let mut b = 1.0;
         if f < 1.0 {
@@ -60,26 +60,26 @@ impl medal {
     }
 }
 
-impl material for medal {
+impl Material for Medal {
     fn scatter(
         &self,
-        r_in: &ray,
-        rec: &mut hit_record,
+        r_in: &Ray,
+        rec: &mut HitRecord,
         attenuation: &mut Color1,
-        scattered: &mut ray,
+        scattered: &mut Ray,
     ) -> bool {
         let reflected = Vec3::reflect(&r_in.direction().unit_vector().clone(), &rec.normal.clone());
-        *scattered = ray::new(rec.p, reflected + Vec3::random_in_unit_sphere() * self.fuzz);
+        *scattered = Ray::new(rec.p, reflected + Vec3::random_in_unit_sphere() * self.fuzz);
         *attenuation = self.albedo;
         (scattered.direction() * rec.normal) > 0.0
     }
 }
 
-pub struct dielectric {
+pub struct Dielectric {
     ir: f64,
 }
 
-impl dielectric {
+impl Dielectric {
     pub fn new(index_of_refraction: f64) -> Self {
         Self {
             ir: index_of_refraction,
@@ -93,21 +93,20 @@ impl dielectric {
     }
 }
 
-impl material for dielectric {
+impl Material for Dielectric {
     fn scatter(
         &self,
-        r_in: &ray,
-        rec: &mut hit_record,
+        r_in: &Ray,
+        rec: &mut HitRecord,
         attenuation: &mut Color1,
-        scattered: &mut ray,
+        scattered: &mut Ray,
     ) -> bool {
         *attenuation = Color1::new(1.0, 1.0, 1.0);
-        let mut refraction_ratio = 0.0;
-        if rec.front_face {
-            refraction_ratio = 1.0 / self.ir;
+        let refraction_ratio = if rec.front_face {
+            1.0 / self.ir
         } else {
-            refraction_ratio = self.ir;
-        }
+            self.ir
+        };
 
         let unit_direction = r_in.direction().unit_vector();
 
@@ -118,15 +117,15 @@ impl material for dielectric {
         let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
 
         let cannot_refract = (refraction_ratio * sin_theta) > 1.0;
-        let mut direction = Vec3::new(0.0, 0.0, 0.0);
-
-        if cannot_refract || (dielectric::reflectance(cos_theta, refraction_ratio) > random_f64()) {
-            direction = Vec3::reflect(&unit_direction, &rec.normal);
+        let direction = if cannot_refract
+            || (Dielectric::reflectance(cos_theta, refraction_ratio) > random_f64())
+        {
+            Vec3::reflect(&unit_direction, &rec.normal)
         } else {
-            direction = Vec3::refract(&unit_direction, &rec.normal, refraction_ratio);
-        }
+            Vec3::refract(&unit_direction, &rec.normal, refraction_ratio)
+        };
 
-        *scattered = ray::new(rec.p, direction);
+        *scattered = Ray::new(rec.p, direction);
         true
     }
 }

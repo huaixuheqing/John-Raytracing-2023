@@ -2,20 +2,20 @@ pub use crate::vec3::Point3;
 pub use crate::vec3::Vec3;
 
 #[derive(Copy, Clone)]
-pub struct ray {
+pub struct Ray {
     pub orig: Point3,
     pub dir: Vec3,
 }
 
-impl ray {
-    pub fn new(origin: Point3, direction: Vec3) -> ray {
-        ray {
+impl Ray {
+    pub fn new(origin: Point3, direction: Vec3) -> Ray {
+        Ray {
             orig: Point3::new(origin.x, origin.y, origin.z),
             dir: Vec3::new(direction.x, direction.y, direction.z),
         }
     }
-    pub fn new1() -> ray {
-        ray {
+    pub fn new1() -> Ray {
+        Ray {
             orig: Point3::new(0.0, 0.0, 0.0),
             dir: Vec3::new(0.0, 0.0, 0.0),
         }

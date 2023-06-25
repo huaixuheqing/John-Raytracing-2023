@@ -218,7 +218,6 @@ impl Vec3 {
                 return p;
             }
         }
-        Vec3::new(0.0, 0.0, 0.0)
     }
 
     pub fn random_unit_vector() -> Vec3 {
@@ -262,12 +261,11 @@ impl Vec3 {
             cos_theta = (-*uv) * *n;
         }
         let r_out_perp = (*uv + *n * cos_theta) * etai_over_etat;
-        let mut r_out_parallel = Vec3::new(0.0, 0.0, 0.0);
-        if 1.0 > r_out_perp.length_squared() {
-            r_out_parallel = *n * (-(1.0 - r_out_perp.length_squared()).sqrt());
+        let r_out_parallel = if 1.0 > r_out_perp.length_squared() {
+            *n * (-(1.0 - r_out_perp.length_squared()).sqrt())
         } else {
-            r_out_parallel = *n * (-(r_out_perp.length_squared() - 1.0).sqrt());
-        }
+            *n * (-(r_out_perp.length_squared() - 1.0).sqrt())
+        };
         r_out_perp + r_out_parallel
     }
 
@@ -280,7 +278,7 @@ impl Vec3 {
     }
 
     pub fn random_in_unit_disk() -> Vec3 {
-        let mut p = Vec3::new(0.0, 0.0, 0.0);
+        let mut p;
         loop {
             p = Vec3::new(random_f64_1(-1.0, 1.0), random_f64_1(-1.0, 1.0), 0.0);
             if p.clone().length_squared() >= 1.0 {
@@ -288,7 +286,6 @@ impl Vec3 {
             };
             return p;
         }
-        p
     }
 }
 

@@ -1,19 +1,18 @@
-const infinity: f64 = f64::INFINITY;
-const pi: f64 = 3.141_592_653_589_793;
+const INFINITY: f64 = f64::INFINITY;
 
-mod Camera;
-mod Hittable;
-mod Hittable_list;
-mod Material;
-mod Ray;
-mod Sphere;
+mod camera;
 mod color;
+mod hittable;
+mod hittable_list;
+mod material;
+mod ray;
 mod rtweekend;
+mod sphere;
 mod vec3;
 
 pub use crate::rtweekend::random_f64;
 use crate::rtweekend::random_f64_1;
-use crate::Sphere::sphere;
+use crate::sphere::Sphere;
 use color::write_color;
 
 use image::{ImageBuffer, RgbImage};
@@ -22,20 +21,20 @@ pub use rtweekend::degrees_to_radians;
 
 use std::fs::File;
 
+pub use camera::Camera;
+pub use hittable::HitRecord;
+pub use hittable::Hittable;
+pub use hittable_list::HittableList;
+pub use material::Dielectric;
+pub use material::Lambertian;
+pub use material::Material;
+pub use material::Medal;
+pub use ray::Ray;
 pub use std::sync::Arc;
 pub use std::vec;
 pub use vec3::Color1;
 pub use vec3::Point3;
 pub use vec3::Vec3;
-pub use Camera::camera;
-pub use Hittable::hit_record;
-pub use Hittable::hittable;
-pub use Hittable_list::hittable_list;
-pub use Material::dielectric;
-pub use Material::lambertian;
-pub use Material::material;
-pub use Material::medal;
-pub use Ray::ray;
 
 const AUTHOR: &str = "Siyuan Huang";
 
@@ -43,14 +42,14 @@ fn is_ci() -> bool {
     option_env!("CI").unwrap_or_default() == "true"
 }
 
-fn ray_color(r: &ray, world: &hittable_list, depth: i32) -> Vec3 {
-    let mut rec = hit_record::new();
+fn ray_color(r: &Ray, world: &HittableList, depth: i32) -> Vec3 {
+    let mut rec = HitRecord::new();
     if depth <= 0 {
         return Vec3::new(0.0, 0.0, 0.0);
     }
 
-    if world.hit(r, 0.001, infinity, &mut rec) {
-        let mut scattered = ray::new1();
+    if world.hit(r, 0.001, INFINITY, &mut rec) {
+        let mut scattered = Ray::new1();
         let mut attenuation = Color1::new(0.0, 0.0, 0.0);
         if rec
             .mat_ptr
@@ -62,19 +61,19 @@ fn ray_color(r: &ray, world: &hittable_list, depth: i32) -> Vec3 {
         }
         return Color1::new(0.0, 0.0, 0.0);
         //let mut target = rec.p.clone() + rec.normal.clone() + Vec3::random_in_hemisphere(&rec.normal);
-        //return ray_color(&ray::new(rec.p.clone(),target - rec.p.clone()), &world, depth - 1) * 0.5;
+        //return ray_color(&Ray::new(rec.p.clone(),target - rec.p.clone()), &world, depth - 1) * 0.5;
     }
     let unit_direction = r.dir.unit_vector();
     let t = 0.5 * (unit_direction.y() + 1.0);
     Color1::new(1.0, 1.0, 1.0) * (1.0 - t) + Color1::new(0.5, 0.7, 1.0) * t
 }
 
-fn random_scene() -> hittable_list {
-    let mut world = hittable_list::new();
+fn random_scene() -> HittableList {
+    let mut world = HittableList::new();
 
-    let ground_material: Option<Arc<dyn material>> =
-        Some(Arc::new(lambertian::new(&Color1::new(0.5, 0.5, 0.5))));
-    world.add(Some(Arc::new(sphere::new(
+    let ground_material: Option<Arc<dyn Material>> =
+        Some(Arc::new(Lambertian::new(&Color1::new(0.5, 0.5, 0.5))));
+    world.add(Some(Arc::new(Sphere::new(
         Point3::new(0.0, -1000.0, 0.0),
         1000.0,
         ground_material,
@@ -90,42 +89,42 @@ fn random_scene() -> hittable_list {
             );
 
             if (center - Point3::new(4.0, 0.2, 0.0)).length() > 0.9 {
-                let sphere_material: Option<Arc<dyn material>>;
+                let sphere_material: Option<Arc<dyn Material>>;
 
                 if choose_mat < 0.8 {
                     let albedo = Color1::random().elemul(Color1::random());
-                    sphere_material = Some(Arc::new(lambertian::new(&albedo)));
-                    world.add(Some(Arc::new(sphere::new(center, 0.2, sphere_material))));
+                    sphere_material = Some(Arc::new(Lambertian::new(&albedo)));
+                    world.add(Some(Arc::new(Sphere::new(center, 0.2, sphere_material))));
                 } else if choose_mat < 0.95 {
                     let albedo = Color1::random1(0.5, 1.0);
                     let fuzz = random_f64_1(0.0, 0.5);
-                    sphere_material = Some(Arc::new(medal::new(&albedo, fuzz)));
-                    world.add(Some(Arc::new(sphere::new(center, 0.2, sphere_material))));
+                    sphere_material = Some(Arc::new(Medal::new(&albedo, fuzz)));
+                    world.add(Some(Arc::new(Sphere::new(center, 0.2, sphere_material))));
                 } else {
-                    sphere_material = Some(Arc::new(dielectric::new(1.5)));
-                    world.add(Some(Arc::new(sphere::new(center, 0.2, sphere_material))));
+                    sphere_material = Some(Arc::new(Dielectric::new(1.5)));
+                    world.add(Some(Arc::new(Sphere::new(center, 0.2, sphere_material))));
                 }
             }
         }
     }
-    let material1: Option<Arc<dyn material>> = Some(Arc::new(dielectric::new(1.5)));
-    world.add(Some(Arc::new(sphere::new(
+    let material1: Option<Arc<dyn Material>> = Some(Arc::new(Dielectric::new(1.5)));
+    world.add(Some(Arc::new(Sphere::new(
         Point3::new(0.0, 1.0, 0.0),
         1.0,
         material1,
     ))));
 
-    let material2: Option<Arc<dyn material>> =
-        Some(Arc::new(lambertian::new(&Color1::new(0.4, 0.2, 0.1))));
-    world.add(Some(Arc::new(sphere::new(
+    let material2: Option<Arc<dyn Material>> =
+        Some(Arc::new(Lambertian::new(&Color1::new(0.4, 0.2, 0.1))));
+    world.add(Some(Arc::new(Sphere::new(
         Point3::new(-4.0, 1.0, 0.0),
         1.0,
         material2,
     ))));
 
-    let material3: Option<Arc<dyn material>> =
-        Some(Arc::new(medal::new(&Color1::new(0.7, 0.6, 0.5), 0.0)));
-    world.add(Some(Arc::new(sphere::new(
+    let material3: Option<Arc<dyn Material>> =
+        Some(Arc::new(Medal::new(&Color1::new(0.7, 0.6, 0.5), 0.0)));
+    world.add(Some(Arc::new(Sphere::new(
         Point3::new(4.0, 1.0, 0.0),
         1.0,
         material3,
@@ -171,7 +170,7 @@ fn main() {
     let dist_to_focus = 10.0;
     let aperture = 0.1;
 
-    let cam = camera::new(
+    let cam = Camera::new(
         &lookfrom,
         &lookat,
         &vup,
