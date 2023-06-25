@@ -69,10 +69,7 @@ impl material for medal {
         scattered: &mut ray,
     ) -> bool {
         let reflected = Vec3::reflect(&r_in.direction().unit_vector().clone(), &rec.normal.clone());
-        *scattered = ray::new(
-            rec.p,
-            reflected + Vec3::random_in_unit_sphere() * self.fuzz,
-        );
+        *scattered = ray::new(rec.p, reflected + Vec3::random_in_unit_sphere() * self.fuzz);
         *attenuation = self.albedo;
         (scattered.direction() * rec.normal) > 0.0
     }

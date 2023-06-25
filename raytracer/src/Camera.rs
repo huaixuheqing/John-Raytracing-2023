@@ -42,10 +42,7 @@ impl camera {
             origin: origin1,
             horizontal: horizontal1,
             vertical: vertical1,
-            lower_left_corner: origin1
-                - horizontal1 / 2.0
-                - vertical1 / 2.0
-                - w1 * focus_dist,
+            lower_left_corner: origin1 - horizontal1 / 2.0 - vertical1 / 2.0 - w1 * focus_dist,
             w: w1,
             u: u1,
             v: v1,
@@ -59,9 +56,7 @@ impl camera {
 
         ray::new(
             self.origin + offest,
-            self.lower_left_corner + self.horizontal * s + self.vertical * t
-                - self.origin
-                - offest,
+            self.lower_left_corner + self.horizontal * s + self.vertical * t - self.origin - offest,
         )
     }
 }
