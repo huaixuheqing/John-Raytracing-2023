@@ -14,10 +14,10 @@ impl ray {
             dir: Vec3::new(direction.x, direction.y, direction.z),
         }
     }
-    pub fn new1() -> ray{
-        ray{
-            orig: Point3::new(0.0,0.0,0.0),
-            dir: Vec3::new(0.0,0.0,0.0),
+    pub fn new1() -> ray {
+        ray {
+            orig: Point3::new(0.0, 0.0, 0.0),
+            dir: Vec3::new(0.0, 0.0, 0.0),
         }
     }
     pub fn origin(&self) -> Point3 {

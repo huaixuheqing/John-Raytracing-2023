@@ -1,5 +1,5 @@
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign, Neg};
 use crate::rtweekend::{random_f64, random_f64_1};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Vec3 {
@@ -197,43 +197,54 @@ impl Vec3 {
         }
     }
 
-    pub fn random() -> Vec3{
-        return Vec3::new(random_f64(),random_f64(),random_f64());
+    pub fn random() -> Vec3 {
+        return Vec3::new(random_f64(), random_f64(), random_f64());
     }
 
-    pub fn random1(min:f64, max:f64) -> Vec3{
-        return Vec3::new(random_f64_1(min,max),random_f64_1(min,max),random_f64_1(min,max));
+    pub fn random1(min: f64, max: f64) -> Vec3 {
+        return Vec3::new(
+            random_f64_1(min, max),
+            random_f64_1(min, max),
+            random_f64_1(min, max),
+        );
     }
 
-    pub fn random_in_unit_sphere() -> Vec3{
-        while true{
-            let p = Vec3::random1(-1.0,1.0);
-            if p.length_squared() >= 1.0 {continue;}
-            else {return p;}
+    pub fn random_in_unit_sphere() -> Vec3 {
+        while true {
+            let p = Vec3::random1(-1.0, 1.0);
+            if p.length_squared() >= 1.0 {
+                continue;
+            } else {
+                return p;
+            }
         }
-        return Vec3::new(0.0,0.0,0.0);
+        return Vec3::new(0.0, 0.0, 0.0);
     }
 
-    pub fn random_unit_vector() -> Vec3{
+    pub fn random_unit_vector() -> Vec3 {
         return Vec3::random_in_unit_sphere().unit_vector();
     }
 
-    pub fn random_in_hemisphere(normal:&Vec3) -> Vec3{
+    pub fn random_in_hemisphere(normal: &Vec3) -> Vec3 {
         let in_unit_sphere = Vec3::random_in_unit_sphere();
         if in_unit_sphere * *normal > 0.0 {
             return in_unit_sphere;
-        }
-        else{
-            return -in_unit_sphere
+        } else {
+            return -in_unit_sphere;
         }
     }
 
     pub fn near_zero(&self) -> bool {
         let s = 1e-8;
-        return ((*self).x < s) && ((*self).x > -s) && ((*self).y < s) && ((*self).y > -s) && ((*self).z < s) && ((*self).z > -s);
+        return ((*self).x < s)
+            && ((*self).x > -s)
+            && ((*self).y < s)
+            && ((*self).y > -s)
+            && ((*self).z < s)
+            && ((*self).z > -s);
     }
 
-    pub fn reflect(v:&Vec3, n:&Vec3) -> Vec3{
+    pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
         return v.clone() - n.clone() * 2.0 * (v.clone() * n.clone());
     }
 
@@ -245,35 +256,36 @@ impl Vec3 {
         }
     }
 
-    pub fn refract(uv:&Vec3, n:&Vec3, etai_over_etat:f64) -> Vec3{
+    pub fn refract(uv: &Vec3, n: &Vec3, etai_over_etat: f64) -> Vec3 {
         let mut cos_theta = 1.0;
-        if ((- uv.clone()) * n.clone()) < 1.0 {
-            cos_theta = (- uv.clone()) * n.clone();
+        if ((-uv.clone()) * n.clone()) < 1.0 {
+            cos_theta = (-uv.clone()) * n.clone();
         }
         let mut r_out_perp = (uv.clone() + *n * cos_theta) * etai_over_etat;
-        let mut r_out_parallel = Vec3::new(0.0,0.0,0.0);
+        let mut r_out_parallel = Vec3::new(0.0, 0.0, 0.0);
         if 1.0 > r_out_perp.length_squared() {
             r_out_parallel = n.clone() * (-(1.0 - r_out_perp.length_squared()).sqrt());
-        }
-        else {
+        } else {
             r_out_parallel = n.clone() * (-(r_out_perp.length_squared() - 1.0).sqrt());
         }
-        return  r_out_perp + r_out_parallel;
+        return r_out_perp + r_out_parallel;
     }
 
-    pub fn cross(u:&Vec3, v:&Vec3) -> Vec3{
-        Self{
+    pub fn cross(u: &Vec3, v: &Vec3) -> Vec3 {
+        Self {
             x: u.y * v.z - u.z * v.y,
             y: u.z * v.x - u.x * v.z,
             z: u.x * v.y - u.y * v.x,
         }
     }
 
-    pub fn random_in_unit_disk() -> Vec3{
-        let mut p = Vec3::new(0.0,0.0,0.0);
-        while true{
-            p = Vec3::new(random_f64_1(-1.0,1.0),random_f64_1(-1.0,1.0), 0.0);
-            if p.clone().length_squared() >= 1.0 {continue};
+    pub fn random_in_unit_disk() -> Vec3 {
+        let mut p = Vec3::new(0.0, 0.0, 0.0);
+        while true {
+            p = Vec3::new(random_f64_1(-1.0, 1.0), random_f64_1(-1.0, 1.0), 0.0);
+            if p.clone().length_squared() >= 1.0 {
+                continue;
+            };
             return p;
         }
         return p;

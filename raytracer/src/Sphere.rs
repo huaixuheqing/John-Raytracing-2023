@@ -2,9 +2,9 @@ use crate::hittable;
 use crate::vec3::Point3;
 use crate::vec3::Vec3;
 use crate::Hittable::hit_record;
+use crate::Material::material;
 use crate::Ray::ray;
 use std::sync::Arc;
-use crate::Material::material;
 
 pub struct sphere {
     pub center: Point3,
@@ -22,7 +22,7 @@ impl sphere {
     }
 }
 
-impl hittable for sphere{
+impl hittable for sphere {
     fn hit(&self, r: &ray, t_min: f64, t_max: f64, rec: &mut hit_record) -> bool {
         let oc = r.origin() - (*self).center.clone();
         let a = r.direction().length_squared();

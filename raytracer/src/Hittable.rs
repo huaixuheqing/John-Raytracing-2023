@@ -1,8 +1,8 @@
 use crate::vec3::Point3;
 use crate::vec3::Vec3;
+use crate::Material::material;
 use crate::Ray::ray;
 use std::sync::Arc;
-use crate::Material::material;
 
 #[derive(Clone)]
 pub struct hit_record {
