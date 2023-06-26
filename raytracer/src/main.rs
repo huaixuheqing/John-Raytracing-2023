@@ -1,13 +1,18 @@
 const INFINITY: f64 = f64::INFINITY;
 
+mod aabb;
+mod bvh;
 mod camera;
 mod color;
 mod hittable;
 mod hittable_list;
 mod material;
+mod moving_sphere;
+mod perlin;
 mod ray;
 mod rtweekend;
 mod sphere;
+mod texture;
 mod vec3;
 
 pub use crate::rtweekend::random_f64;
@@ -29,9 +34,13 @@ pub use material::Dielectric;
 pub use material::Lambertian;
 pub use material::Material;
 pub use material::Medal;
+pub use moving_sphere::MovingSphere;
 pub use ray::Ray;
 pub use std::sync::Arc;
 pub use std::vec;
+pub use texture::CheckerTexture;
+pub use texture::NoiseTexture;
+pub use texture::Texture;
 pub use vec3::Color1;
 pub use vec3::Point3;
 pub use vec3::Vec3;
@@ -71,12 +80,14 @@ fn ray_color(r: &Ray, world: &HittableList, depth: i32) -> Vec3 {
 fn random_scene() -> HittableList {
     let mut world = HittableList::new();
 
-    let ground_material: Option<Arc<dyn Material>> =
-        Some(Arc::new(Lambertian::new(&Color1::new(0.5, 0.5, 0.5))));
+    let checker: Option<Arc<dyn Texture>> = Some(Arc::new(CheckerTexture::new1(
+        Color1::new(0.2, 0.3, 0.1),
+        Color1::new(0.9, 0.9, 0.9),
+    )));
     world.add(Some(Arc::new(Sphere::new(
         Point3::new(0.0, -1000.0, 0.0),
         1000.0,
-        ground_material,
+        Some(Arc::new(Lambertian::new1(checker))),
     ))));
 
     for a in -11..11 {
@@ -94,7 +105,15 @@ fn random_scene() -> HittableList {
                 if choose_mat < 0.8 {
                     let albedo = Color1::random().elemul(Color1::random());
                     sphere_material = Some(Arc::new(Lambertian::new(&albedo)));
-                    world.add(Some(Arc::new(Sphere::new(center, 0.2, sphere_material))));
+                    let center2 = center + Vec3::new(0.0, random_f64_1(0.0, 0.5), 0.0);
+                    world.add(Some(Arc::new(MovingSphere::new(
+                        center,
+                        center2,
+                        0.0,
+                        1.0,
+                        0.2,
+                        sphere_material,
+                    ))));
                 } else if choose_mat < 0.95 {
                     let albedo = Color1::random1(0.5, 1.0);
                     let fuzz = random_f64_1(0.0, 0.5);
@@ -133,6 +152,42 @@ fn random_scene() -> HittableList {
     world
 }
 
+fn two_spheres() -> HittableList {
+    let mut objects = HittableList::new();
+    let checker: Option<Arc<dyn Texture>> = Some(Arc::new(CheckerTexture::new1(
+        Color1::new(0.2, 0.3, 0.1),
+        Color1::new(0.9, 0.9, 0.9),
+    )));
+    objects.add(Some(Arc::new(Sphere::new(
+        Point3::new(0.0, -10.0, 0.0),
+        10.0,
+        Some(Arc::new(Lambertian::new1(checker.clone()))),
+    ))));
+    objects.add(Some(Arc::new(Sphere::new(
+        Point3::new(0.0, 10.0, 0.0),
+        10.0,
+        Some(Arc::new(Lambertian::new1(checker))),
+    ))));
+    return objects;
+}
+
+fn two_perlin_spheres() -> HittableList {
+    let mut objects = HittableList::new();
+
+    let pertext: Option<Arc<dyn Texture>> = Some(Arc::new(NoiseTexture::new(4.0)));
+    objects.add(Some(Arc::new(Sphere::new(
+        Point3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        Some(Arc::new(Lambertian::new1(pertext.clone()))),
+    ))));
+    objects.add(Some(Arc::new(Sphere::new(
+        Point3::new(0.0, 2.0, 0.0),
+        2.0,
+        Some(Arc::new(Lambertian::new1(pertext))),
+    ))));
+    return objects;
+}
+
 fn main() {
     // get environment variable CI, which is true for GitHub Actions
     let is_ci = is_ci();
@@ -140,12 +195,12 @@ fn main() {
     println!("CI: {}", is_ci);
 
     // Image
-    let aspect_ratio = 3.0 / 2.0;
-    let width: usize = 1200;
+    let aspect_ratio = 16.0 / 9.0;
+    let width: usize = 400;
     let height = (width as f64 / aspect_ratio) as usize;
     let path = "output/test.jpg";
     let quality = 60; // From 0 to 100, suggested value: 60
-    let samples_per_pixel = 10;
+    let samples_per_pixel = 20;
     let max_depth = 20;
 
     // Create image data
@@ -161,23 +216,50 @@ fn main() {
     };
 
     // World
-    let world = random_scene();
+    let world;
+    let lookfrom;
+    let lookat;
+    let mut vfov = 40.0;
+    let mut aperture = 0.0;
+
+    match 0 {
+        1 => {
+            world = random_scene();
+            lookfrom = Point3::new(13.0, 2.0, 3.0);
+            lookat = Point3::new(0.0, 0.0, 0.0);
+            vfov = 20.0;
+            aperture = 0.1;
+        }
+
+        2 => {
+            world = two_spheres();
+            lookfrom = Point3::new(13.0, 2.0, 3.0);
+            lookat = Point3::new(0.0, 0.0, 0.0);
+            vfov = 20.0;
+        }
+
+        _ => {
+            world = two_perlin_spheres();
+            lookfrom = Point3::new(13.0, 2.0, 3.0);
+            lookat = Point3::new(0.0, 0.0, 0.0);
+            vfov = 20.0;
+        }
+    }
 
     // Camera
-    let lookfrom = Point3::new(13.0, 2.0, 3.0);
-    let lookat = Point3::new(0.0, 0.0, 0.0);
     let vup = Vec3::new(0.0, 1.0, 0.0);
     let dist_to_focus = 10.0;
-    let aperture = 0.1;
 
     let cam = Camera::new(
         &lookfrom,
         &lookat,
         &vup,
-        20.0,
+        vfov,
         aspect_ratio,
         aperture,
         dist_to_focus,
+        0.0,
+        1.0,
     );
 
     for j in 0..height {

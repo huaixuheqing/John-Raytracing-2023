@@ -1,7 +1,10 @@
 use crate::hittable::HitRecord;
 use crate::vec3::Vec3;
-use crate::{random_f64, ray, vec3};
+use crate::{random_f64, ray, texture, vec3};
 pub use ray::Ray;
+use std::sync::Arc;
+pub use texture::SolidColor;
+pub use texture::Texture;
 use vec3::Color1;
 
 pub trait Material {
@@ -15,19 +18,24 @@ pub trait Material {
 }
 
 pub struct Lambertian {
-    albedo: Color1,
+    albedo: Option<Arc<dyn Texture>>,
 }
 
 impl Lambertian {
     pub fn new(a: &Color1) -> Self {
-        Self { albedo: *a }
+        Self {
+            albedo: Some(Arc::new(SolidColor::new(a.clone()))),
+        }
+    }
+    pub fn new1(a: Option<Arc<dyn Texture>>) -> Self {
+        Self { albedo: a }
     }
 }
 
 impl Material for Lambertian {
     fn scatter(
         &self,
-        _r_in: &Ray,
+        r_in: &Ray,
         rec: &mut HitRecord,
         attenuation: &mut Color1,
         scattered: &mut Ray,
@@ -36,8 +44,8 @@ impl Material for Lambertian {
         if scatter_direction.near_zero() {
             scatter_direction = rec.normal;
         }
-        *scattered = Ray::new(rec.p, scatter_direction);
-        *attenuation = self.albedo;
+        *scattered = Ray::new(rec.p, scatter_direction, r_in.time());
+        *attenuation = self.albedo.clone().unwrap().value(rec.u, rec.v, &rec.p);
         true
     }
 }
@@ -69,7 +77,11 @@ impl Material for Medal {
         scattered: &mut Ray,
     ) -> bool {
         let reflected = Vec3::reflect(&r_in.direction().unit_vector().clone(), &rec.normal.clone());
-        *scattered = Ray::new(rec.p, reflected + Vec3::random_in_unit_sphere() * self.fuzz);
+        *scattered = Ray::new(
+            rec.p,
+            reflected + Vec3::random_in_unit_sphere() * self.fuzz,
+            r_in.time(),
+        );
         *attenuation = self.albedo;
         (scattered.direction() * rec.normal) > 0.0
     }
@@ -125,7 +137,7 @@ impl Material for Dielectric {
             Vec3::refract(&unit_direction, &rec.normal, refraction_ratio)
         };
 
-        *scattered = Ray::new(rec.p, direction);
+        *scattered = Ray::new(rec.p, direction, r_in.time());
         true
     }
 }
