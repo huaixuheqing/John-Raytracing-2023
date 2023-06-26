@@ -1,13 +1,16 @@
 use crate::hittable::HitRecord;
 use crate::vec3::Vec3;
-use crate::{random_f64, ray, texture, vec3};
+use crate::{random_f64, ray, texture, vec3, Point3};
 pub use ray::Ray;
+use std::num::IntErrorKind::Empty;
 use std::sync::Arc;
 pub use texture::SolidColor;
 pub use texture::Texture;
 use vec3::Color1;
 
 pub trait Material {
+    fn emitted(&self, u: f64, v: f64, p: &Point3) -> Color1;
+
     fn scatter(
         &self,
         r_in: &Ray,
@@ -24,7 +27,7 @@ pub struct Lambertian {
 impl Lambertian {
     pub fn new(a: &Color1) -> Self {
         Self {
-            albedo: Some(Arc::new(SolidColor::new(a.clone()))),
+            albedo: Some(Arc::new(SolidColor::new(*a))),
         }
     }
     pub fn new1(a: Option<Arc<dyn Texture>>) -> Self {
@@ -33,6 +36,10 @@ impl Lambertian {
 }
 
 impl Material for Lambertian {
+    fn emitted(&self, u: f64, v: f64, p: &Point3) -> Color1 {
+        Color1::new(0.0, 0.0, 0.0)
+    }
+
     fn scatter(
         &self,
         r_in: &Ray,
@@ -69,6 +76,10 @@ impl Medal {
 }
 
 impl Material for Medal {
+    fn emitted(&self, u: f64, v: f64, p: &Point3) -> Color1 {
+        Color1::new(0.0, 0.0, 0.0)
+    }
+
     fn scatter(
         &self,
         r_in: &Ray,
@@ -106,6 +117,10 @@ impl Dielectric {
 }
 
 impl Material for Dielectric {
+    fn emitted(&self, u: f64, v: f64, p: &Point3) -> Color1 {
+        Color1::new(0.0, 0.0, 0.0)
+    }
+
     fn scatter(
         &self,
         r_in: &Ray,
@@ -139,5 +154,37 @@ impl Material for Dielectric {
 
         *scattered = Ray::new(rec.p, direction, r_in.time());
         true
+    }
+}
+
+pub struct DiffuseLight {
+    emit: Option<Arc<dyn Texture>>,
+}
+
+impl DiffuseLight {
+    pub fn new(a: Option<Arc<dyn Texture>>) -> Self {
+        Self { emit: a }
+    }
+
+    pub fn new1(c: Color1) -> Self {
+        Self {
+            emit: Some(Arc::new(SolidColor::new(c))),
+        }
+    }
+}
+
+impl Material for DiffuseLight {
+    fn scatter(
+        &self,
+        r_in: &Ray,
+        rec: &mut HitRecord,
+        attenuation: &mut Color1,
+        scattered: &mut Ray,
+    ) -> bool {
+        false
+    }
+
+    fn emitted(&self, u: f64, v: f64, p: &Point3) -> Color1 {
+        self.emit.clone().unwrap().value(u, v, p)
     }
 }

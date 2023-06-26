@@ -52,7 +52,7 @@ impl HittableList {
     }
 
     pub fn bounding_box(&self, time0: f64, time1: f64, output_box: &mut Aabb) -> bool {
-        if (*self).objects.is_empty() {
+        if self.objects.is_empty() {
             return false;
         }
 
@@ -74,6 +74,6 @@ impl HittableList {
             };
             first_box = false;
         }
-        return true;
+        true
     }
 }

@@ -35,9 +35,8 @@ impl MovingSphere {
     }
 
     pub fn center(&self, time: f64) -> Point3 {
-        return (*self).center0
-            + ((*self).center1 - (*self).center0)
-                * ((time - (*self).time0) / (*self).time1 - (*self).time0);
+        self.center0
+            + (self.center1 - self.center0) * ((time - self.time0) / self.time1 - self.time0)
     }
 }
 
@@ -72,18 +71,14 @@ impl Hittable for MovingSphere {
 
     fn bounding_box(&self, _time0: f64, _time1: f64, output_box: &mut Aabb) -> bool {
         let box0 = Aabb::new(
-            (*self).center(_time0).clone()
-                - Vec3::new((*self).radius, (*self).radius, (*self).radius),
-            (*self).center(_time0).clone()
-                + Vec3::new((*self).radius, (*self).radius, (*self).radius),
+            (*self).center(_time0) - Vec3::new(self.radius, self.radius, self.radius),
+            (*self).center(_time0) + Vec3::new(self.radius, self.radius, self.radius),
         );
         let box1 = Aabb::new(
-            (*self).center(_time1).clone()
-                - Vec3::new((*self).radius, (*self).radius, (*self).radius),
-            (*self).center(_time1).clone()
-                + Vec3::new((*self).radius, (*self).radius, (*self).radius),
+            (*self).center(_time1) - Vec3::new(self.radius, self.radius, self.radius),
+            (*self).center(_time1) + Vec3::new(self.radius, self.radius, self.radius),
         );
         *output_box = Aabb::surrounding_box(&box0, &box1);
-        return true;
+        true
     }
 }

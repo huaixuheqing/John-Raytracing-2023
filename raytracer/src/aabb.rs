@@ -1,11 +1,14 @@
-use crate::{ray, vec3, Point3};
+use crate::{ray, Point3};
 use ray::Ray;
-use std::cmp::{max, min};
+
 use std::mem::swap;
-use vec3::Vec3;
 
 fn min1(a: f64, b: f64) -> f64 {
-    return if a < b { a } else { b };
+    if a < b {
+        a
+    } else {
+        b
+    }
 }
 
 #[derive(Clone)]
@@ -23,11 +26,11 @@ impl Aabb {
     }
 
     pub fn min(&self) -> Point3 {
-        return (*self).minimum;
+        self.minimum
     }
 
     pub fn max(&self) -> Point3 {
-        return (*self).maximum;
+        self.maximum
     }
 
     pub fn hit(&self, r: &Ray, mut t_min: f64, mut t_max: f64) -> bool {
@@ -44,7 +47,7 @@ impl Aabb {
                 return false;
             }
         }
-        return true;
+        true
     }
 
     pub fn surrounding_box(box0: &Aabb, box1: &Aabb) -> Aabb {
@@ -58,6 +61,6 @@ impl Aabb {
             min1(box0.max().y(), box1.max().y()),
             min1(box0.max().z(), box1.max().z()),
         );
-        return Aabb::new(small, big);
+        Aabb::new(small, big)
     }
 }

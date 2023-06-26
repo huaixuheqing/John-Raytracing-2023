@@ -61,11 +61,11 @@ impl Hittable for Sphere {
         true
     }
 
-    fn bounding_box(&self, time0: f64, time1: f64, output_box: &mut Aabb) -> bool {
+    fn bounding_box(&self, _time0: f64, _time1: f64, output_box: &mut Aabb) -> bool {
         *output_box = Aabb::new(
-            (*self).center.clone() - Vec3::new((*self).radius, (*self).radius, (*self).radius),
-            (*self).center.clone() + Vec3::new((*self).radius, (*self).radius, (*self).radius),
+            self.center - Vec3::new(self.radius, self.radius, self.radius),
+            self.center + Vec3::new(self.radius, self.radius, self.radius),
         );
-        return true;
+        true
     }
 }
