@@ -1,4 +1,3 @@
-use crate::aabb::Aabb;
 use crate::material::Material;
 use crate::ray::Ray;
 use crate::vec3::Point3;
@@ -11,8 +10,6 @@ pub struct HitRecord {
     pub normal: Vec3,
     pub mat_ptr: Option<Arc<dyn Material>>,
     pub t: f64,
-    pub u: f64,
-    pub v: f64,
     pub front_face: bool,
 }
 
@@ -30,8 +27,6 @@ impl HitRecord {
             t: 0.0,
             front_face: false,
             mat_ptr: None,
-            u: 0.0,
-            v: 0.0,
         }
     }
 
@@ -47,5 +42,4 @@ impl HitRecord {
 
 pub trait Hittable {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool;
-    fn bounding_box(&self, time0: f64, time1: f64, output_box: &mut Aabb) -> bool;
 }

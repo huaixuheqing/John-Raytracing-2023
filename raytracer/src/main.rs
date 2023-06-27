@@ -1,19 +1,13 @@
 const INFINITY: f64 = f64::INFINITY;
 
-mod aabb;
-mod aarect;
-mod bvh;
 mod camera;
 mod color;
 mod hittable;
 mod hittable_list;
 mod material;
-mod moving_sphere;
-mod perlin;
 mod ray;
 mod rtweekend;
 mod sphere;
-mod texture;
 mod vec3;
 
 pub use crate::rtweekend::random_f64;
@@ -27,9 +21,6 @@ pub use rtweekend::degrees_to_radians;
 
 use std::fs::File;
 
-use crate::aarect::XyRect;
-use crate::material::DiffuseLight;
-use crate::texture::ImageTecture;
 pub use camera::Camera;
 pub use hittable::HitRecord;
 pub use hittable::Hittable;
@@ -38,13 +29,9 @@ pub use material::Dielectric;
 pub use material::Lambertian;
 pub use material::Material;
 pub use material::Medal;
-pub use moving_sphere::MovingSphere;
 pub use ray::Ray;
 pub use std::sync::Arc;
 pub use std::vec;
-pub use texture::CheckerTexture;
-pub use texture::NoiseTexture;
-pub use texture::Texture;
 pub use vec3::Color1;
 pub use vec3::Point3;
 pub use vec3::Vec3;
@@ -55,46 +42,41 @@ fn is_ci() -> bool {
     option_env!("CI").unwrap_or_default() == "true"
 }
 
-fn ray_color(r: &Ray, background: &Color1, world: &HittableList, depth: i32) -> Vec3 {
+fn ray_color(r: &Ray, world: &HittableList, depth: i32) -> Vec3 {
     let mut rec = HitRecord::new();
     if depth <= 0 {
         return Vec3::new(0.0, 0.0, 0.0);
     }
 
-    if !world.hit(r, 0.001, INFINITY, &mut rec) {
-        return background.clone();
+    if world.hit(r, 0.001, INFINITY, &mut rec) {
+        let mut scattered = Ray::new1();
+        let mut attenuation = Color1::new(0.0, 0.0, 0.0);
+        if rec
+            .mat_ptr
+            .clone()
+            .unwrap()
+            .scatter(r, &mut rec, &mut attenuation, &mut scattered)
+        {
+            return ray_color(&scattered, world, depth - 1).elemul(attenuation);
+        }
+        return Color1::new(0.0, 0.0, 0.0);
+        //let mut target = rec.p.clone() + rec.normal.clone() + Vec3::random_in_hemisphere(&rec.normal);
+        //return ray_color(&Ray::new(rec.p.clone(),target - rec.p.clone()), &world, depth - 1) * 0.5;
     }
-    let mut scattered = Ray::new1();
-    let mut attenuation = Color1::new(0.0, 0.0, 0.0);
-    let mut emitted = rec.mat_ptr.clone().unwrap().emitted(rec.u, rec.v, &rec.p);
-    if !rec
-        .mat_ptr
-        .clone()
-        .unwrap()
-        .scatter(r, &mut rec, &mut attenuation, &mut scattered)
-    {
-        return emitted;
-    }
-    emitted + attenuation * ray_color(&scattered, background, world, depth - 1)
-    //let mut target = rec.p.clone() + rec.normal.clone() + Vec3::random_in_hemisphere(&rec.normal);
-    //return ray_color(&Ray::new(rec.p.clone(),target - rec.p.clone()), &world, depth - 1) * 0.5;
-
-    //let unit_direction = r.dir.unit_vector();
-    //let t = 0.5 * (unit_direction.y() + 1.0);
-    //Color1::new(1.0, 1.0, 1.0) * (1.0 - t) + Color1::new(0.5, 0.7, 1.0) * t
+    let unit_direction = r.dir.unit_vector();
+    let t = 0.5 * (unit_direction.y() + 1.0);
+    Color1::new(1.0, 1.0, 1.0) * (1.0 - t) + Color1::new(0.5, 0.7, 1.0) * t
 }
 
 fn random_scene() -> HittableList {
     let mut world = HittableList::new();
 
-    let checker: Option<Arc<dyn Texture>> = Some(Arc::new(CheckerTexture::new1(
-        Color1::new(0.2, 0.3, 0.1),
-        Color1::new(0.9, 0.9, 0.9),
-    )));
+    let ground_material: Option<Arc<dyn Material>> =
+        Some(Arc::new(Lambertian::new(&Color1::new(0.5, 0.5, 0.5))));
     world.add(Some(Arc::new(Sphere::new(
         Point3::new(0.0, -1000.0, 0.0),
         1000.0,
-        Some(Arc::new(Lambertian::new1(checker))),
+        ground_material,
     ))));
 
     for a in -11..11 {
@@ -112,15 +94,7 @@ fn random_scene() -> HittableList {
                 if choose_mat < 0.8 {
                     let albedo = Color1::random().elemul(Color1::random());
                     sphere_material = Some(Arc::new(Lambertian::new(&albedo)));
-                    let center2 = center + Vec3::new(0.0, random_f64_1(0.0, 0.5), 0.0);
-                    world.add(Some(Arc::new(MovingSphere::new(
-                        center,
-                        center2,
-                        0.0,
-                        1.0,
-                        0.2,
-                        sphere_material,
-                    ))));
+                    world.add(Some(Arc::new(Sphere::new(center, 0.2, sphere_material))));
                 } else if choose_mat < 0.95 {
                     let albedo = Color1::random1(0.5, 1.0);
                     let fuzz = random_f64_1(0.0, 0.5);
@@ -159,80 +133,6 @@ fn random_scene() -> HittableList {
     world
 }
 
-fn two_spheres() -> HittableList {
-    let mut objects = HittableList::new();
-    let checker: Option<Arc<dyn Texture>> = Some(Arc::new(CheckerTexture::new1(
-        Color1::new(0.2, 0.3, 0.1),
-        Color1::new(0.9, 0.9, 0.9),
-    )));
-    objects.add(Some(Arc::new(Sphere::new(
-        Point3::new(0.0, -10.0, 0.0),
-        10.0,
-        Some(Arc::new(Lambertian::new1(checker.clone()))),
-    ))));
-    objects.add(Some(Arc::new(Sphere::new(
-        Point3::new(0.0, 10.0, 0.0),
-        10.0,
-        Some(Arc::new(Lambertian::new1(checker))),
-    ))));
-    objects
-}
-
-fn two_perlin_spheres() -> HittableList {
-    let mut objects = HittableList::new();
-
-    let pertext: Option<Arc<dyn Texture>> = Some(Arc::new(NoiseTexture::new(4.0)));
-    objects.add(Some(Arc::new(Sphere::new(
-        Point3::new(0.0, -1000.0, 0.0),
-        1000.0,
-        Some(Arc::new(Lambertian::new1(pertext.clone()))),
-    ))));
-    objects.add(Some(Arc::new(Sphere::new(
-        Point3::new(0.0, 2.0, 0.0),
-        2.0,
-        Some(Arc::new(Lambertian::new1(pertext))),
-    ))));
-    objects
-}
-
-fn earth() -> HittableList {
-    let mut world = HittableList::new();
-    let earth_texture: Option<Arc<dyn Texture>> = Some(Arc::new(ImageTecture::new("earthmap.jpg")));
-    let earth_surface: Option<Arc<dyn Material>> = Some(Arc::new(Lambertian::new1(earth_texture)));
-    let globe: Option<Arc<dyn Hittable>> = Some(Arc::new(Sphere::new(
-        Point3::new(0.0, 0.0, 0.0),
-        2.0,
-        earth_surface,
-    )));
-    world.add(globe);
-
-    world
-}
-
-fn simple_light() -> HittableList {
-    let mut objects = HittableList::new();
-
-    let pertext: Option<Arc<dyn Texture>> = Some(Arc::new(NoiseTexture::new(4.0)));
-    objects.add(Some(Arc::new(Sphere::new(
-        Point3::new(0.0, -1000.0, 0.0),
-        1000.0,
-        Some(Arc::new(Lambertian::new1(pertext.clone()))),
-    ))));
-    objects.add(Some(Arc::new(Sphere::new(
-        Point3::new(0.0, 2.0, 0.0),
-        2.0,
-        Some(Arc::new(Lambertian::new1(pertext))),
-    ))));
-
-    let difflight: Option<Arc<dyn Material>> =
-        Some(Arc::new(DiffuseLight::new1(Color1::new(4.0, 4.0, 4.0))));
-    objects.add(Some(Arc::new(XyRect::new(
-        3.0, 5.0, 1.0, 3.0, -2.0, difflight,
-    ))));
-
-    objects
-}
-
 fn main() {
     // get environment variable CI, which is true for GitHub Actions
     let is_ci = is_ci();
@@ -240,12 +140,12 @@ fn main() {
     println!("CI: {}", is_ci);
 
     // Image
-    let aspect_ratio = 16.0 / 9.0;
-    let width: usize = 400;
+    let aspect_ratio = 3.0 / 2.0;
+    let width: usize = 1200;
     let height = (width as f64 / aspect_ratio) as usize;
     let path = "output/test.jpg";
-    let quality = 60; // From 0 to 100, suggested value: 60
-    let mut samples_per_pixel = 20;
+    let quality = 100; // From 0 to 100, suggested value: 60
+    let samples_per_pixel = 500;
     let max_depth = 50;
 
     // Create image data
@@ -261,71 +161,23 @@ fn main() {
     };
 
     // World
-    let world;
-    let lookfrom;
-    let lookat;
-    let mut vfov = 40.0;
-    let mut aperture = 0.0;
-    let mut background = Color1::new(0.0, 0.0, 0.0);
-
-    match 0 {
-        1 => {
-            world = random_scene();
-            background = Color1::new(0.70, 0.80, 1.00);
-            lookfrom = Point3::new(13.0, 2.0, 3.0);
-            lookat = Point3::new(0.0, 0.0, 0.0);
-            vfov = 20.0;
-            aperture = 0.1;
-        }
-
-        2 => {
-            world = two_spheres();
-            background = Color1::new(0.70, 0.80, 1.00);
-            lookfrom = Point3::new(13.0, 2.0, 3.0);
-            lookat = Point3::new(0.0, 0.0, 0.0);
-            vfov = 20.0;
-        }
-
-        3 => {
-            world = two_perlin_spheres();
-            background = Color1::new(0.70, 0.80, 1.00);
-            lookfrom = Point3::new(13.0, 2.0, 3.0);
-            lookat = Point3::new(0.0, 0.0, 0.0);
-            vfov = 20.0;
-        }
-
-        4 => {
-            world = earth();
-            background = Color1::new(0.70, 0.80, 1.00);
-            lookfrom = Point3::new(13.0, 2.0, 3.0);
-            lookat = Point3::new(0.0, 0.0, 0.0);
-            vfov = 20.0;
-        }
-
-        _ => {
-            world = simple_light();
-            samples_per_pixel = 400;
-            background = Color1::new(0.0, 0.0, 0.0);
-            lookfrom = Point3::new(26.0, 3.0, 6.0);
-            lookat = Point3::new(0.0, 2.0, 0.0);
-            vfov = 20.0;
-        }
-    }
+    let world = random_scene();
 
     // Camera
+    let lookfrom = Point3::new(13.0, 2.0, 3.0);
+    let lookat = Point3::new(0.0, 0.0, 0.0);
     let vup = Vec3::new(0.0, 1.0, 0.0);
     let dist_to_focus = 10.0;
+    let aperture = 0.1;
 
     let cam = Camera::new(
         &lookfrom,
         &lookat,
         &vup,
-        vfov,
+        20.0,
         aspect_ratio,
         aperture,
         dist_to_focus,
-        0.0,
-        1.0,
     );
 
     for j in 0..height {
@@ -335,7 +187,7 @@ fn main() {
                 let u = (i as f64 + random_f64()) / (width - 1) as f64;
                 let v = (j as f64 + random_f64()) / (height - 1) as f64;
                 let r = cam.get_ray(u, v);
-                pixel_color += ray_color(&r, &background, &world, max_depth);
+                pixel_color += ray_color(&r, &world, max_depth);
             }
             write_color(&pixel_color, &mut img, i, height - j - 1, samples_per_pixel);
             bar.inc(1);
