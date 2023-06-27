@@ -15,6 +15,7 @@ mod rtweekend;
 mod sphere;
 mod texture;
 mod vec3;
+mod r#box;
 
 pub use crate::rtweekend::random_f64;
 use crate::rtweekend::random_f64_1;
@@ -42,12 +43,15 @@ pub use moving_sphere::MovingSphere;
 pub use ray::Ray;
 pub use std::sync::Arc;
 pub use std::vec;
+use console::Color::White;
 pub use texture::CheckerTexture;
 pub use texture::NoiseTexture;
 pub use texture::Texture;
 pub use vec3::Color1;
 pub use vec3::Point3;
 pub use vec3::Vec3;
+use crate::hittable::{RotateY, Translate};
+use crate::r#box::Box1;
 
 const AUTHOR: &str = "Siyuan Huang";
 
@@ -275,8 +279,18 @@ fn cornell_box() -> HittableList {
         white.clone(),
     ))));
     objects.add(Some(Arc::new(XyRect::new(
-        0.0, 555.0, 0.0, 555.0, 555.0, white,
+        0.0, 555.0, 0.0, 555.0, 555.0, white.clone(),
     ))));
+
+    let mut box1:Option<Arc<dyn Hittable>> = Some(Arc::new(Box1::new(&Point3::new(0.0,0.0,0.0),&Point3::new(165.0,330.0,165.0),white.clone())));
+    box1 = Some(Arc::new(RotateY::new(box1,15.0)));
+    box1 = Some(Arc::new(Translate::new(box1,&Vec3::new(265.0,0.0,295.0))));
+    objects.add(box1);
+
+    let mut box2:Option<Arc<dyn Hittable>> = Some(Arc::new(Box1::new(&Point3::new(0.0,0.0,0.0),&Point3::new(165.0,165.0,165.0),white.clone())));
+    box2 = Some(Arc::new(RotateY::new(box2,-18.0)));
+    box2 = Some(Arc::new(Translate::new(box2,&Vec3::new(130.0,0.0,65.0))));
+    objects.add(box2);
 
     objects
 }
