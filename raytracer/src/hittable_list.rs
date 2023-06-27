@@ -70,7 +70,7 @@ impl HittableList {
             *output_box = if first_box {
                 temp_box.clone()
             } else {
-                Aabb::surrounding_box(output_box, &mut temp_box)
+                Aabb::surrounding_box(output_box, &temp_box)
             };
             first_box = false;
         }

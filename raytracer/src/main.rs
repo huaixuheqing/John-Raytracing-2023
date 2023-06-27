@@ -299,9 +299,9 @@ fn main() {
     let world;
     let lookfrom;
     let lookat;
-    let mut vfov = 40.0;
+    let vfov;
     let mut aperture = 0.0;
-    let mut background = Color1::new(0.0, 0.0, 0.0);
+    let background;
 
     match 0 {
         1 => {
@@ -358,7 +358,7 @@ fn main() {
         }
     }
 
-    let mut height = (width as f64 / aspect_ratio) as usize;
+    let height = (width as f64 / aspect_ratio) as usize;
     // Create image data
     let mut img: RgbImage = ImageBuffer::new(width.try_into().unwrap(), height.try_into().unwrap());
 
@@ -382,9 +382,7 @@ fn main() {
         vfov,
         aspect_ratio,
         aperture,
-        dist_to_focus,
-        0.0,
-        1.0,
+        (dist_to_focus, 0.0, 1.0),
     );
 
     for j in 0..height {

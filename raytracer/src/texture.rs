@@ -1,7 +1,6 @@
 use crate::rtweekend::clamp;
 use crate::{perlin, vec3, Point3};
 
-use image::GenericImageView;
 use perlin::Perlin;
 use std::sync::Arc;
 pub use vec3::Color1;
@@ -21,11 +20,11 @@ impl SolidColor {
         Self { color_value: c }
     }
 
-    pub fn new1(red: f64, green: f64, blue: f64) -> Self {
+    /*    pub fn new1(red: f64, green: f64, blue: f64) -> Self {
         Self {
             color_value: Color1::new(red, green, blue),
         }
-    }
+    }*/
 }
 
 impl Texture for SolidColor {

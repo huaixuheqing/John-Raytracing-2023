@@ -4,14 +4,14 @@ use crate::{rtweekend, Point3, Vec3};
 use rtweekend::random_i32;
 use std::vec;
 
-pub fn permute(p: &mut Vec<i32>, n: i32) {
+pub fn permute(p: &mut [i32], n: i32) {
     for i in (1..n).rev() {
         let target = random_i32(0, i);
         p.swap(i as usize, target as usize);
     }
 }
 
-pub fn trilinear_interp(c: [[[f64; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
+/*pub fn trilinear_interp(c: [[[f64; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
     let mut accum = 0.0;
     for i in 0..2 {
         for j in 0..2 {
@@ -24,7 +24,7 @@ pub fn trilinear_interp(c: [[[f64; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
         }
     }
     accum
-}
+}*/
 
 pub fn perlin_interp(c: [[[Vec3; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
     let uu = u * u * (3.0 - 2.0 * u);
@@ -89,7 +89,7 @@ impl Perlin {
         let k = p.z.floor() as i32;
 
         let mut c: [[[Vec3; 2]; 2]; 2] = [[[Vec3::new(0.0, 0.0, 0.0); 2]; 2]; 2];
-        for di in 0..2 {
+        for (di, _item) in c.clone().iter_mut().enumerate() {
             for dj in 0..2 {
                 for dk in 0..2 {
                     c[di][dj][dk] = self.ranvec[(self.perm_x[((i + di as i32) & 255) as usize]

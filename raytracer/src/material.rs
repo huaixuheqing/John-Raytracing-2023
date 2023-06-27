@@ -27,7 +27,7 @@ pub struct Lambertian {
 impl Lambertian {
     pub fn new(a: &Color1) -> Self {
         Self {
-            albedo: Some(Arc::new(SolidColor::new(a.clone()))),
+            albedo: Some(Arc::new(SolidColor::new(*a))),
         }
     }
     pub fn new1(a: Option<Arc<dyn Texture>>) -> Self {
@@ -162,9 +162,9 @@ pub struct DiffuseLight {
 }
 
 impl DiffuseLight {
-    pub fn new(a: Option<Arc<dyn Texture>>) -> Self {
+    /*pub fn new(a: Option<Arc<dyn Texture>>) -> Self {
         Self { emit: a }
-    }
+    }*/
 
     pub fn new1(c: Color1) -> Self {
         Self {

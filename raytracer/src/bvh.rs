@@ -1,4 +1,4 @@
-use crate::{aabb, hittable, hittable_list, rtweekend, vec3, HitRecord, Point3, Ray};
+use crate::{aabb, hittable, hittable_list, rtweekend, vec3, HitRecord, Ray};
 use aabb::Aabb;
 pub use hittable::Hittable;
 pub use hittable_list::HittableList;
@@ -14,7 +14,7 @@ pub struct BvhNode {
     box1: Aabb,
 }
 
-pub fn sort(a: &mut Vec<Option<Arc<dyn Hittable>>>, start: i32, end: i32, axis: i32) {
+/*pub fn sort(a: &mut Vec<Option<Arc<dyn Hittable>>>, start: i32, end: i32, axis: i32) {
     if start >= end - 1 {
         return;
     };
@@ -42,10 +42,10 @@ pub fn sort(a: &mut Vec<Option<Arc<dyn Hittable>>>, start: i32, end: i32, axis: 
     (*a)[start1 as usize] = tmp;
     sort(a, start, start1, axis);
     sort(a, start1 + 1, end1, axis);
-}
+}*/
 
 impl BvhNode {
-    pub fn box_compare(
+    /*    pub fn box_compare(
         a: &Option<Arc<dyn Hittable>>,
         b: &Option<Arc<dyn Hittable>>,
         axis: i32,
@@ -140,7 +140,7 @@ impl BvhNode {
     pub fn new1(list: &mut HittableList, time0: f64, time1: f64) -> Self {
         let length = list.objects.len();
         BvhNode::new(&mut list.objects, 0, length, time0, time1)
-    }
+    }*/
 }
 
 impl Hittable for BvhNode {
