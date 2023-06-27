@@ -27,7 +27,7 @@ pub use rtweekend::degrees_to_radians;
 
 use std::fs::File;
 
-use crate::aarect::XyRect;
+use crate::aarect::{XyRect, XzRect, YzRect};
 use crate::material::DiffuseLight;
 use crate::texture::ImageTecture;
 pub use camera::Camera;
@@ -62,11 +62,11 @@ fn ray_color(r: &Ray, background: &Color1, world: &HittableList, depth: i32) -> 
     }
 
     if !world.hit(r, 0.001, INFINITY, &mut rec) {
-        return background.clone();
+        return *background;
     }
     let mut scattered = Ray::new1();
     let mut attenuation = Color1::new(0.0, 0.0, 0.0);
-    let mut emitted = rec.mat_ptr.clone().unwrap().emitted(rec.u, rec.v, &rec.p);
+    let emitted = rec.mat_ptr.clone().unwrap().emitted(rec.u, rec.v, &rec.p);
     if !rec
         .mat_ptr
         .clone()
@@ -75,7 +75,11 @@ fn ray_color(r: &Ray, background: &Color1, world: &HittableList, depth: i32) -> 
     {
         return emitted;
     }
-    emitted + attenuation * ray_color(&scattered, background, world, depth - 1)
+    emitted
+        + Vec3::elemul(
+            attenuation,
+            ray_color(&scattered, background, world, depth - 1),
+        )
     //let mut target = rec.p.clone() + rec.normal.clone() + Vec3::random_in_hemisphere(&rec.normal);
     //return ray_color(&Ray::new(rec.p.clone(),target - rec.p.clone()), &world, depth - 1) * 0.5;
 
@@ -233,6 +237,50 @@ fn simple_light() -> HittableList {
     objects
 }
 
+fn cornell_box() -> HittableList {
+    let mut objects = HittableList::new();
+
+    let red: Option<Arc<dyn Material>> =
+        Some(Arc::new(Lambertian::new(&Color1::new(0.65, 0.05, 0.05))));
+    let white: Option<Arc<dyn Material>> =
+        Some(Arc::new(Lambertian::new(&Color1::new(0.73, 0.73, 0.73))));
+    let green: Option<Arc<dyn Material>> =
+        Some(Arc::new(Lambertian::new(&Color1::new(0.12, 0.45, 0.15))));
+    let light: Option<Arc<dyn Material>> =
+        Some(Arc::new(DiffuseLight::new1(Color1::new(15.0, 15.0, 15.0))));
+
+    objects.add(Some(Arc::new(YzRect::new(
+        0.0, 555.0, 0.0, 555.0, 555.0, green,
+    ))));
+    objects.add(Some(Arc::new(YzRect::new(
+        0.0, 555.0, 0.0, 555.0, 0.0, red,
+    ))));
+    objects.add(Some(Arc::new(XzRect::new(
+        213.0, 343.0, 227.0, 332.0, 554.0, light,
+    ))));
+    objects.add(Some(Arc::new(XzRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        0.0,
+        white.clone(),
+    ))));
+    objects.add(Some(Arc::new(XzRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        white.clone(),
+    ))));
+    objects.add(Some(Arc::new(XyRect::new(
+        0.0, 555.0, 0.0, 555.0, 555.0, white,
+    ))));
+
+    objects
+}
+
 fn main() {
     // get environment variable CI, which is true for GitHub Actions
     let is_ci = is_ci();
@@ -240,25 +288,12 @@ fn main() {
     println!("CI: {}", is_ci);
 
     // Image
-    let aspect_ratio = 16.0 / 9.0;
-    let width: usize = 400;
-    let height = (width as f64 / aspect_ratio) as usize;
+    let mut aspect_ratio = 16.0 / 9.0;
+    let mut width: usize = 400;
     let path = "output/test.jpg";
     let quality = 60; // From 0 to 100, suggested value: 60
-    let mut samples_per_pixel = 20;
+    let mut samples_per_pixel = 100;
     let max_depth = 50;
-
-    // Create image data
-    let mut img: RgbImage = ImageBuffer::new(width.try_into().unwrap(), height.try_into().unwrap());
-
-    // Progress bar UI powered by library `indicatif`
-    // You can use indicatif::ProgressStyle to make it more beautiful
-    // You can also use indicatif::MultiProgress in multi-threading to show progress of each thread
-    let bar = if is_ci {
-        ProgressBar::hidden()
-    } else {
-        ProgressBar::new((height * width) as u64)
-    };
 
     // World
     let world;
@@ -302,7 +337,7 @@ fn main() {
             vfov = 20.0;
         }
 
-        _ => {
+        5 => {
             world = simple_light();
             samples_per_pixel = 400;
             background = Color1::new(0.0, 0.0, 0.0);
@@ -310,7 +345,31 @@ fn main() {
             lookat = Point3::new(0.0, 2.0, 0.0);
             vfov = 20.0;
         }
+
+        _ => {
+            world = cornell_box();
+            aspect_ratio = 1.0;
+            width = 600;
+            samples_per_pixel = 200;
+            background = Color1::new(0.0, 0.0, 0.0);
+            lookfrom = Point3::new(278.0, 278.0, -800.0);
+            lookat = Point3::new(278.0, 278.0, 0.0);
+            vfov = 40.0;
+        }
     }
+
+    let mut height = (width as f64 / aspect_ratio) as usize;
+    // Create image data
+    let mut img: RgbImage = ImageBuffer::new(width.try_into().unwrap(), height.try_into().unwrap());
+
+    // Progress bar UI powered by library `indicatif`
+    // You can use indicatif::ProgressStyle to make it more beautiful
+    // You can also use indicatif::MultiProgress in multi-threading to show progress of each thread
+    let bar = if is_ci {
+        ProgressBar::hidden()
+    } else {
+        ProgressBar::new((height * width) as u64)
+    };
 
     // Camera
     let vup = Vec3::new(0.0, 1.0, 0.0);

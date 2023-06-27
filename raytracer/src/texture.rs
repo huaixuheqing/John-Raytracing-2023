@@ -1,7 +1,7 @@
 use crate::rtweekend::clamp;
 use crate::{perlin, vec3, Point3};
-use image::RgbImage;
-use image::{DynamicImage, GenericImageView};
+
+use image::GenericImageView;
 use perlin::Perlin;
 use std::sync::Arc;
 pub use vec3::Color1;
@@ -97,7 +97,7 @@ pub struct ImageTecture {
 
 impl ImageTecture {
     pub fn new(filename: &str) -> Self {
-        let components_per_pixel = BYTES_PER_PIXEL;
+        let _components_per_pixel = BYTES_PER_PIXEL;
         let image = image::open(filename).expect("Failed to load image");
         let data1 = image.to_rgb8().into_vec();
         Self {
@@ -121,12 +121,12 @@ impl ImageTecture {
 }
 
 impl Texture for ImageTecture {
-    fn value(&self, mut u: f64, mut v: f64, p: &Point3) -> Color1 {
+    fn value(&self, mut u: f64, mut v: f64, _p: &Point3) -> Color1 {
         u = clamp(u, 0.0, 1.0);
         v = 1.0 - clamp(v, 0.0, 1.0);
 
-        let mut i = (u * self.width as f64) as i32;
-        let mut j = (v * self.height as f64) as i32;
+        let i = (u * self.width as f64) as i32;
+        let j = (v * self.height as f64) as i32;
 
         self.get_pixel(i, j)
     }

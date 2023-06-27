@@ -2,7 +2,7 @@ use crate::hittable::HitRecord;
 use crate::vec3::Vec3;
 use crate::{random_f64, ray, texture, vec3, Point3};
 pub use ray::Ray;
-use std::num::IntErrorKind::Empty;
+
 use std::sync::Arc;
 pub use texture::SolidColor;
 pub use texture::Texture;
@@ -27,7 +27,7 @@ pub struct Lambertian {
 impl Lambertian {
     pub fn new(a: &Color1) -> Self {
         Self {
-            albedo: Some(Arc::new(SolidColor::new(*a))),
+            albedo: Some(Arc::new(SolidColor::new(a.clone()))),
         }
     }
     pub fn new1(a: Option<Arc<dyn Texture>>) -> Self {
@@ -36,7 +36,7 @@ impl Lambertian {
 }
 
 impl Material for Lambertian {
-    fn emitted(&self, u: f64, v: f64, p: &Point3) -> Color1 {
+    fn emitted(&self, _u: f64, _v: f64, _p: &Point3) -> Color1 {
         Color1::new(0.0, 0.0, 0.0)
     }
 
@@ -76,7 +76,7 @@ impl Medal {
 }
 
 impl Material for Medal {
-    fn emitted(&self, u: f64, v: f64, p: &Point3) -> Color1 {
+    fn emitted(&self, _u: f64, _v: f64, _p: &Point3) -> Color1 {
         Color1::new(0.0, 0.0, 0.0)
     }
 
@@ -117,7 +117,7 @@ impl Dielectric {
 }
 
 impl Material for Dielectric {
-    fn emitted(&self, u: f64, v: f64, p: &Point3) -> Color1 {
+    fn emitted(&self, _u: f64, _v: f64, _p: &Point3) -> Color1 {
         Color1::new(0.0, 0.0, 0.0)
     }
 
@@ -176,10 +176,10 @@ impl DiffuseLight {
 impl Material for DiffuseLight {
     fn scatter(
         &self,
-        r_in: &Ray,
-        rec: &mut HitRecord,
-        attenuation: &mut Color1,
-        scattered: &mut Ray,
+        _r_in: &Ray,
+        _rec: &mut HitRecord,
+        _attenuation: &mut Color1,
+        _scattered: &mut Ray,
     ) -> bool {
         false
     }
