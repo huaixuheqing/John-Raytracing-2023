@@ -6,6 +6,7 @@ mod r#box;
 mod bvh;
 mod camera;
 mod color;
+mod constant_medium;
 mod hittable;
 mod hittable_list;
 mod material;
@@ -16,7 +17,6 @@ mod rtweekend;
 mod sphere;
 mod texture;
 mod vec3;
-mod constant_medium;
 
 pub use crate::rtweekend::random_f64;
 use crate::rtweekend::random_f64_1;
@@ -47,15 +47,15 @@ pub use moving_sphere::MovingSphere;
 pub use ray::Ray;
 pub use std::sync::Arc;
 pub use std::vec;
-use console::Alignment::Center;
+
+use crate::bvh::BvhNode;
+use crate::constant_medium::ConstantMedium;
 pub use texture::CheckerTexture;
 pub use texture::NoiseTexture;
 pub use texture::Texture;
 pub use vec3::Color1;
 pub use vec3::Point3;
 pub use vec3::Vec3;
-use crate::bvh::BvhNode;
-use crate::constant_medium::ConstantMedium;
 
 const AUTHOR: &str = "Siyuan Huang";
 
@@ -318,17 +318,63 @@ fn cornell_box() -> HittableList {
 fn cornell_smoke() -> HittableList {
     let mut objects = HittableList::new();
 
-    let red:Option<Arc<dyn Material>> = Some(Arc::new(Lambertian::new(&Color1::new(0.65,0.05,0.05))));
-    let white:Option<Arc<dyn Material>> = Some(Arc::new(Lambertian::new(&Color1::new(0.73,0.73,0.73))));
-    let green:Option<Arc<dyn Material>> = Some(Arc::new(Lambertian::new(&Color1::new(0.12,0.45,0.15))));
-    let light:Option<Arc<dyn Material>> = Some(Arc::new(DiffuseLight::new1(Color1::new(7.0,7.0,7.0))));
+    let red: Option<Arc<dyn Material>> =
+        Some(Arc::new(Lambertian::new(&Color1::new(0.65, 0.05, 0.05))));
+    let white: Option<Arc<dyn Material>> =
+        Some(Arc::new(Lambertian::new(&Color1::new(0.73, 0.73, 0.73))));
+    let green: Option<Arc<dyn Material>> =
+        Some(Arc::new(Lambertian::new(&Color1::new(0.12, 0.45, 0.15))));
+    let light: Option<Arc<dyn Material>> =
+        Some(Arc::new(DiffuseLight::new1(Color1::new(7.0, 7.0, 7.0))));
 
-    objects.add(Some(Arc::new(YzRect::new(0.0,555.0,0.0,555.0,555.0,green.clone()))));
-    objects.add(Some(Arc::new(YzRect::new(0.0,555.0,0.0,555.0,0.0,red.clone()))));
-    objects.add(Some(Arc::new(XzRect::new(113.0,443.0,127.0,432.0,554.0,light.clone()))));
-    objects.add(Some(Arc::new(XzRect::new(0.0,555.0,0.0,555.0,555.0,white.clone()))));
-    objects.add(Some(Arc::new(XzRect::new(0.0,555.0,0.0,555.0,0.0,white.clone()))));
-    objects.add(Some(Arc::new(XyRect::new(0.0,555.0,0.0,555.0,555.0,white.clone()))));
+    objects.add(Some(Arc::new(YzRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        green.clone(),
+    ))));
+    objects.add(Some(Arc::new(YzRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        0.0,
+        red.clone(),
+    ))));
+    objects.add(Some(Arc::new(XzRect::new(
+        113.0,
+        443.0,
+        127.0,
+        432.0,
+        554.0,
+        light.clone(),
+    ))));
+    objects.add(Some(Arc::new(XzRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        white.clone(),
+    ))));
+    objects.add(Some(Arc::new(XzRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        0.0,
+        white.clone(),
+    ))));
+    objects.add(Some(Arc::new(XyRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        white.clone(),
+    ))));
     let mut box1: Option<Arc<dyn Hittable>> = Some(Arc::new(Box1::new(
         &Point3::new(0.0, 0.0, 0.0),
         &Point3::new(165.0, 330.0, 165.0),
@@ -348,65 +394,139 @@ fn cornell_smoke() -> HittableList {
     box2 = Some(Arc::new(RotateY::new(box2, -18.0)));
     box2 = Some(Arc::new(Translate::new(box2, &Vec3::new(130.0, 0.0, 65.0))));
 
-    objects.add(Some(Arc::new(ConstantMedium::new1(box1, 0.01,Color1::new(0.0,0.0,0.0)))));
-    objects.add(Some(Arc::new(ConstantMedium::new1(box2, 0.01,Color1::new(1.0,1.0,1.0)))));
+    objects.add(Some(Arc::new(ConstantMedium::new1(
+        box1,
+        0.01,
+        Color1::new(0.0, 0.0, 0.0),
+    ))));
+    objects.add(Some(Arc::new(ConstantMedium::new1(
+        box2,
+        0.01,
+        Color1::new(1.0, 1.0, 1.0),
+    ))));
 
     objects
 }
 
 fn final_scene() -> HittableList {
     let mut boxes1 = HittableList::new();
-    let ground:Option<Arc<dyn Material>> = Some(Arc::new(Lambertian::new(&Color1::new(0.48,0.83,0.53))));
+    let ground: Option<Arc<dyn Material>> =
+        Some(Arc::new(Lambertian::new(&Color1::new(0.48, 0.83, 0.53))));
 
     let boxes_per_side = 20;
     for i in 0..boxes_per_side {
-        for j in 0..boxes_per_side{
+        for j in 0..boxes_per_side {
             let w = 100.0;
             let x0 = -1000.0 + i as f64 * w;
             let z0 = -1000.0 + j as f64 * w;
             let y0 = 0.0;
             let x1 = x0 + w;
-            let y1 = random_f64_1(1.0,101.0);
+            let y1 = random_f64_1(1.0, 101.0);
             let z1 = z0 + w;
 
-            boxes1.add(Some(Arc::new(Box1::new(&Point3::new(x0,y0,z0),&Point3::new(x1,y1,z1),ground.clone()))));
+            boxes1.add(Some(Arc::new(Box1::new(
+                &Point3::new(x0, y0, z0),
+                &Point3::new(x1, y1, z1),
+                ground.clone(),
+            ))));
         }
     }
 
     let mut objects = HittableList::new();
 
-    objects.add(Some(Arc::new(BvhNode::new1(&mut boxes1, 0.0,1.0))));
+    objects.add(Some(Arc::new(BvhNode::new1(&mut boxes1, 0.0, 1.0))));
 
-    let light:Option<Arc<dyn Material>> = Some(Arc::new(DiffuseLight::new1(Color1::new(7.0,7.0,7.0))));
-    objects.add(Some(Arc::new(XzRect::new(123.0,423.0,147.0,412.0,554.0,light.clone()))));
+    let light: Option<Arc<dyn Material>> =
+        Some(Arc::new(DiffuseLight::new1(Color1::new(7.0, 7.0, 7.0))));
+    objects.add(Some(Arc::new(XzRect::new(
+        123.0,
+        423.0,
+        147.0,
+        412.0,
+        554.0,
+        light.clone(),
+    ))));
 
-    let center1 = Point3::new(400.0,400.0,200.0);
-    let center2 = center1 + Vec3::new(30.0,0.0,0.0);
-    let moving_sphere_material:Option<Arc<dyn Material>> = Some(Arc::new(Lambertian::new(&Color1::new(0.7,0.3,0.1))));
-    objects.add(Some(Arc::new(MovingSphere::new(center1,center2,0.0,1.0,50.0,moving_sphere_material))));
+    let center1 = Point3::new(400.0, 400.0, 200.0);
+    let center2 = center1 + Vec3::new(30.0, 0.0, 0.0);
+    let moving_sphere_material: Option<Arc<dyn Material>> =
+        Some(Arc::new(Lambertian::new(&Color1::new(0.7, 0.3, 0.1))));
+    objects.add(Some(Arc::new(MovingSphere::new(
+        center1,
+        center2,
+        0.0,
+        1.0,
+        50.0,
+        moving_sphere_material,
+    ))));
 
-    objects.add(Some(Arc::new(Sphere::new(Point3::new(260.0,150.0,45.0),50.0,Some(Arc::new(Dielectric::new(1.5)))))));
-    objects.add(Some(Arc::new(Sphere::new(Point3::new(0.0,150.0,145.0),50.0,Some(Arc::new(Medal::new(&Color1::new(0.8,0.8,0.9),1.0)))))));
+    objects.add(Some(Arc::new(Sphere::new(
+        Point3::new(260.0, 150.0, 45.0),
+        50.0,
+        Some(Arc::new(Dielectric::new(1.5))),
+    ))));
+    objects.add(Some(Arc::new(Sphere::new(
+        Point3::new(0.0, 150.0, 145.0),
+        50.0,
+        Some(Arc::new(Medal::new(&Color1::new(0.8, 0.8, 0.9), 1.0))),
+    ))));
 
-    let mut boundary:Option<Arc<dyn Hittable>> = Some(Arc::new(Sphere::new(Point3::new(360.0,150.0,145.0),70.0,Some(Arc::new(Dielectric::new(1.5))))));
+    let mut boundary: Option<Arc<dyn Hittable>> = Some(Arc::new(Sphere::new(
+        Point3::new(360.0, 150.0, 145.0),
+        70.0,
+        Some(Arc::new(Dielectric::new(1.5))),
+    )));
     objects.add(boundary.clone());
-    objects.add(Some(Arc::new(ConstantMedium::new1(boundary,0.2,Color1::new(0.2,0.4,0.9)))));
-    boundary = Some(Arc::new(Sphere::new(Point3::new(0.0,0.0,0.0),5000.0,Some(Arc::new(Dielectric::new(1.5))))));
-    objects.add(Some(Arc::new(ConstantMedium::new1(boundary,0.0001,Color1::new(1.0,1.0,1.0)))));
+    objects.add(Some(Arc::new(ConstantMedium::new1(
+        boundary,
+        0.2,
+        Color1::new(0.2, 0.4, 0.9),
+    ))));
+    boundary = Some(Arc::new(Sphere::new(
+        Point3::new(0.0, 0.0, 0.0),
+        5000.0,
+        Some(Arc::new(Dielectric::new(1.5))),
+    )));
+    objects.add(Some(Arc::new(ConstantMedium::new1(
+        boundary,
+        0.0001,
+        Color1::new(1.0, 1.0, 1.0),
+    ))));
 
-    let emat:Option<Arc<dyn Material>> = Some(Arc::new(Lambertian::new1(Some(Arc::new(ImageTecture::new("earthmap.jpg"))))));
-    objects.add(Some(Arc::new(Sphere::new(Point3::new(400.0,200.0,400.0),100.0,emat))));
+    let emat: Option<Arc<dyn Material>> = Some(Arc::new(Lambertian::new1(Some(Arc::new(
+        ImageTecture::new("earthmap.jpg"),
+    )))));
+    objects.add(Some(Arc::new(Sphere::new(
+        Point3::new(400.0, 200.0, 400.0),
+        100.0,
+        emat,
+    ))));
     let pertext: Option<Arc<dyn Texture>> = Some(Arc::new(NoiseTexture::new(0.1)));
-    objects.add(Some(Arc::new(Sphere::new(Point3::new(220.0,280.0,300.0),80.0, Some(Arc::new(Lambertian::new1(pertext)))))));
+    objects.add(Some(Arc::new(Sphere::new(
+        Point3::new(220.0, 280.0, 300.0),
+        80.0,
+        Some(Arc::new(Lambertian::new1(pertext))),
+    ))));
 
     let mut boxes2 = HittableList::new();
-    let white:Option<Arc<dyn Material>> = Some(Arc::new(Lambertian::new(&Color1::new(0.73,0.73,0.73))));
+    let white: Option<Arc<dyn Material>> =
+        Some(Arc::new(Lambertian::new(&Color1::new(0.73, 0.73, 0.73))));
     let ns = 1000;
-    for j in 0..ns{
-        boxes2.add(Some(Arc::new(Sphere::new(Point3::random1(0.0,165.0),10.0,white.clone()))));
+    for _j in 0..ns {
+        boxes2.add(Some(Arc::new(Sphere::new(
+            Point3::random1(0.0, 165.0),
+            10.0,
+            white.clone(),
+        ))));
     }
 
-    objects.add(Some(Arc::new(Translate::new(Some(Arc::new(RotateY::new(Some(Arc::new(BvhNode::new1(&mut boxes2,0.0,1.0))),15.0))),&Vec3::new(-100.0,270.0,395.0)))));
+    objects.add(Some(Arc::new(Translate::new(
+        Some(Arc::new(RotateY::new(
+            Some(Arc::new(BvhNode::new1(&mut boxes2, 0.0, 1.0))),
+            15.0,
+        ))),
+        &Vec3::new(-100.0, 270.0, 395.0),
+    ))));
 
     objects
 }
@@ -431,7 +551,7 @@ fn main() {
     let lookat;
     let vfov;
     let mut aperture = 0.0;
-    let mut background = Vec3::new(0.0,0.0,0.0);
+    let mut background = Vec3::new(0.0, 0.0, 0.0);
 
     match 0 {
         1 => {
@@ -492,8 +612,8 @@ fn main() {
             aspect_ratio = 1.0;
             width = 600;
             samples_per_pixel = 200;
-            lookfrom = Point3::new(278.0,278.0,-800.0);
-            lookat = Point3::new(278.0,278.0,0.0);
+            lookfrom = Point3::new(278.0, 278.0, -800.0);
+            lookat = Point3::new(278.0, 278.0, 0.0);
             vfov = 40.0;
         }
 
@@ -502,9 +622,9 @@ fn main() {
             aspect_ratio = 1.0;
             width = 800;
             samples_per_pixel = 10000;
-            background = Color1::new(0.0,0.0,0.0);
-            lookfrom = Point3::new(478.0,278.0,-600.0);
-            lookat = Point3::new(278.0,278.0,0.0);
+            background = Color1::new(0.0, 0.0, 0.0);
+            lookfrom = Point3::new(478.0, 278.0, -600.0);
+            lookat = Point3::new(278.0, 278.0, 0.0);
             vfov = 40.0;
         }
     }

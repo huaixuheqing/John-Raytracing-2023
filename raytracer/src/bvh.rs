@@ -1,4 +1,4 @@
-use crate::{aabb, hittable, hittable_list, Point3, rtweekend, vec3, HitRecord, Ray};
+use crate::{aabb, hittable, hittable_list, rtweekend, vec3, HitRecord, Point3, Ray};
 use aabb::Aabb;
 pub use hittable::Hittable;
 pub use hittable_list::HittableList;
@@ -45,7 +45,7 @@ pub fn sort(a: &mut Vec<Option<Arc<dyn Hittable>>>, start: i32, end: i32, axis: 
 }
 
 impl BvhNode {
-        pub fn box_compare(
+    pub fn box_compare(
         a: &Option<Arc<dyn Hittable>>,
         b: &Option<Arc<dyn Hittable>>,
         axis: i32,
