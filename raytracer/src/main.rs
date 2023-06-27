@@ -34,7 +34,7 @@ use crate::material::DiffuseLight;
 use crate::r#box::Box1;
 use crate::texture::ImageTecture;
 pub use camera::Camera;
-use console::Color::White;
+
 pub use hittable::HitRecord;
 pub use hittable::Hittable;
 pub use hittable_list::HittableList;

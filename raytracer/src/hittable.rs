@@ -1,6 +1,6 @@
 use crate::aabb::Aabb;
 use crate::material::Material;
-use crate::r#box::Box1;
+
 use crate::ray::Ray;
 use crate::vec3::Point3;
 use crate::vec3::Vec3;
@@ -61,7 +61,7 @@ impl Translate {
     pub fn new(p: Option<Arc<dyn Hittable>>, displacement: &Vec3) -> Self {
         Self {
             ptr: p,
-            offset: displacement.clone(),
+            offset: *displacement,
         }
     }
 }
@@ -149,7 +149,7 @@ impl RotateY {
 }
 
 impl Hittable for RotateY {
-    fn bounding_box(&self, time0: f64, time1: f64, output_box: &mut Aabb) -> bool {
+    fn bounding_box(&self, _time0: f64, _time1: f64, output_box: &mut Aabb) -> bool {
         *output_box = (*self).clone().bbox;
         self.hasbox
     }

@@ -64,15 +64,15 @@ impl Box1 {
         ))));
 
         Self {
-            box_max: p1.clone(),
-            box_min: p0.clone(),
+            box_max: *p1,
+            box_min: *p0,
             sides: sides1,
         }
     }
 }
 
 impl Hittable for Box1 {
-    fn bounding_box(&self, time0: f64, time1: f64, output_box: &mut Aabb) -> bool {
+    fn bounding_box(&self, _time0: f64, _time1: f64, output_box: &mut Aabb) -> bool {
         *output_box = Aabb::new(self.box_min, self.box_max);
         true
     }
