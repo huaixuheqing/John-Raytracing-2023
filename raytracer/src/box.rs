@@ -10,7 +10,7 @@ pub struct Box1 {
 }
 
 impl Box1 {
-    pub fn new(p0: &Point3, p1: &Point3, ptr: Option<Arc<dyn Material>>) -> Self {
+    pub fn new(p0: Point3, p1: Point3, ptr: Option<Arc<dyn Material>>) -> Self {
         let mut sides1 = HittableList::new();
         sides1.add(Some(Arc::new(XyRect::new(
             p0.x,
@@ -64,8 +64,8 @@ impl Box1 {
         ))));
 
         Self {
-            box_max: *p1,
-            box_min: *p0,
+            box_max: p1.clone(),
+            box_min: p0.clone(),
             sides: sides1,
         }
     }
@@ -78,6 +78,6 @@ impl Hittable for Box1 {
     }
 
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
-        self.sides.hit(r, t_min, t_max, rec)
+        self.sides.hit(r, t_min, t_max, &mut *rec)
     }
 }

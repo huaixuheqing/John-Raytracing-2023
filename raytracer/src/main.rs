@@ -292,8 +292,8 @@ fn cornell_box() -> HittableList {
     ))));
 
     let mut box1: Option<Arc<dyn Hittable>> = Some(Arc::new(Box1::new(
-        &Point3::new(0.0, 0.0, 0.0),
-        &Point3::new(165.0, 330.0, 165.0),
+        Point3::new(0.0, 0.0, 0.0),
+        Point3::new(165.0, 330.0, 165.0),
         white.clone(),
     )));
     box1 = Some(Arc::new(RotateY::new(box1, 15.0)));
@@ -304,8 +304,8 @@ fn cornell_box() -> HittableList {
     objects.add(box1);
 
     let mut box2: Option<Arc<dyn Hittable>> = Some(Arc::new(Box1::new(
-        &Point3::new(0.0, 0.0, 0.0),
-        &Point3::new(165.0, 165.0, 165.0),
+        Point3::new(0.0, 0.0, 0.0),
+        Point3::new(165.0, 165.0, 165.0),
         white.clone(),
     )));
     box2 = Some(Arc::new(RotateY::new(box2, -18.0)));
@@ -376,8 +376,8 @@ fn cornell_smoke() -> HittableList {
         white.clone(),
     ))));
     let mut box1: Option<Arc<dyn Hittable>> = Some(Arc::new(Box1::new(
-        &Point3::new(0.0, 0.0, 0.0),
-        &Point3::new(165.0, 330.0, 165.0),
+        Point3::new(0.0, 0.0, 0.0),
+        Point3::new(165.0, 330.0, 165.0),
         white.clone(),
     )));
     box1 = Some(Arc::new(RotateY::new(box1, 15.0)));
@@ -387,8 +387,8 @@ fn cornell_smoke() -> HittableList {
     )));
 
     let mut box2: Option<Arc<dyn Hittable>> = Some(Arc::new(Box1::new(
-        &Point3::new(0.0, 0.0, 0.0),
-        &Point3::new(165.0, 165.0, 165.0),
+        Point3::new(0.0, 0.0, 0.0),
+        Point3::new(165.0, 165.0, 165.0),
         white.clone(),
     )));
     box2 = Some(Arc::new(RotateY::new(box2, -18.0)));
@@ -410,29 +410,19 @@ fn cornell_smoke() -> HittableList {
 
 fn final_scene() -> HittableList {
     let mut boxes1 = HittableList::new();
+    let mut objects = HittableList::new();
     let ground: Option<Arc<dyn Material>> =
         Some(Arc::new(Lambertian::new(&Color1::new(0.48, 0.83, 0.53))));
 
-    let boxes_per_side = 20;
-    for i in 0..boxes_per_side {
-        for j in 0..boxes_per_side {
-            let w = 100.0;
-            let x0 = -1000.0 + i as f64 * w;
-            let z0 = -1000.0 + j as f64 * w;
-            let y0 = 0.0;
-            let x1 = x0 + w;
-            let y1 = random_f64_1(1.0, 101.0);
-            let z1 = z0 + w;
-
+    for i in 0..20 {
+        for j in 0..20 {
             boxes1.add(Some(Arc::new(Box1::new(
-                &Point3::new(x0, y0, z0),
-                &Point3::new(x1, y1, z1),
+                Point3::new(-1000.0 + i as f64 * 100.0, 0.0, -1000.0 + j as f64 * 100.0),
+                Point3::new(-1000.0 + i as f64 * 100.0 + 100.0, random_f64_1(1.0, 101.0), -1000.0 + j as f64 * 100.0 + 100.0),
                 ground.clone(),
             ))));
         }
     }
-
-    let mut objects = HittableList::new();
 
     objects.add(Some(Arc::new(BvhNode::new1(&mut boxes1, 0.0, 1.0))));
 

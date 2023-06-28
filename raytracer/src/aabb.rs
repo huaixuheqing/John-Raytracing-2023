@@ -3,14 +3,6 @@ use ray::Ray;
 
 use std::mem::swap;
 
-fn min1(a: f64, b: f64) -> f64 {
-    if a < b {
-        a
-    } else {
-        b
-    }
-}
-
 #[derive(Clone)]
 pub struct Aabb {
     minimum: Point3,
@@ -41,8 +33,8 @@ impl Aabb {
             if inv_d < 0.0 {
                 swap(&mut t0, &mut t1);
             }
-            t_min = if t0 > t_min { t0 } else { t_min };
-            t_max = if t1 < t_max { t1 } else { t_max };
+            t_min = t_min.max(t0);
+            t_max = t_max.min(t1);
             if t_max <= t_min {
                 return false;
             }
@@ -52,14 +44,14 @@ impl Aabb {
 
     pub fn surrounding_box(box0: &Aabb, box1: &Aabb) -> Aabb {
         let small = Point3::new(
-            min1(box0.min().x(), box1.min().x()),
-            min1(box0.min().y(), box1.min().y()),
-            min1(box0.min().z(), box1.min().z()),
+            box0.min().x().min(box1.min().x()),
+            box0.min().y().min(box1.min().y()),
+            box0.min().z().min(box1.min().z()),
         );
         let big = Point3::new(
-            min1(box0.max().x(), box1.max().x()),
-            min1(box0.max().y(), box1.max().y()),
-            min1(box0.max().z(), box1.max().z()),
+            box0.max().x().max(box1.max().x()),
+            box0.max().y().max(box1.max().y()),
+            box0.max().z().max(box1.max().z()),
         );
         Aabb::new(small, big)
     }

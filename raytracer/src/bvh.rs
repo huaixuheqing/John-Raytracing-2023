@@ -14,36 +14,6 @@ pub struct BvhNode {
     box1: Aabb,
 }
 
-pub fn sort(a: &mut Vec<Option<Arc<dyn Hittable>>>, start: i32, end: i32, axis: i32) {
-    if start >= end - 1 {
-        return;
-    };
-    let tmp = (*a)[start as usize].clone();
-    let mut start1 = start;
-    let mut end1 = end - 1;
-    while start1 < end1 {
-        while start1 < end1
-            && BvhNode::box_compare(&tmp.clone(), &(*a)[end1 as usize].clone(), axis)
-        {
-            end1 -= 1;
-        }
-        if start1 < end1 {
-            (*a)[start1 as usize] = (*a)[end1 as usize].clone();
-        }
-        while start1 < end1
-            && BvhNode::box_compare(&(*a)[start1 as usize].clone(), &tmp.clone(), axis)
-        {
-            start1 += 1;
-        }
-        if start1 < end1 {
-            (*a)[end1 as usize] = (*a)[start1 as usize].clone();
-        }
-    }
-    (*a)[start1 as usize] = tmp;
-    sort(a, start, start1, axis);
-    sort(a, start1 + 1, end1, axis);
-}
-
 impl BvhNode {
     pub fn box_compare(
         a: &Option<Arc<dyn Hittable>>,
@@ -74,6 +44,14 @@ impl BvhNode {
         BvhNode::box_compare(a, b, 2)
     }
 
+    pub fn new0() -> Self {
+        Self{
+            left:None,
+            right:None,
+            box1:Aabb::new(Point3::new(0.0,0.0,0.0),Point3::new(0.0,0.0,0.0)),
+        }
+    }
+
     pub fn new(
         src_objects: &mut Vec<Option<Arc<dyn Hittable>>>,
         start: usize,
@@ -81,7 +59,7 @@ impl BvhNode {
         time0: f64,
         time1: f64,
     ) -> Self {
-        let objects = src_objects;
+        let objects = &mut src_objects.clone();
 
         let axis = random_i32(0, 2);
         let comparator = if axis == 0 {
@@ -93,35 +71,40 @@ impl BvhNode {
         };
 
         let object_span = end - start;
-        let left1: Option<Arc<dyn Hittable>>;
-        let right1: Option<Arc<dyn Hittable>>;
+        let mut tmp = BvhNode::new0();
         if object_span == 1 {
-            left1 = objects[start].clone();
-            right1 = objects[start].clone();
+            tmp.left = objects[start].clone();
+            tmp.right = objects[start].clone();
         } else if object_span == 2 {
             if comparator(&objects[start], &objects[start + 1]) {
-                left1 = objects[start].clone();
-                right1 = objects[start + 1].clone();
+                tmp.left = objects[start].clone();
+                tmp.right = objects[start + 1].clone();
             } else {
-                left1 = objects[start + 1].clone();
-                right1 = objects[start].clone();
+                tmp.left = objects[start + 1].clone();
+                tmp.right = objects[start].clone();
             }
         } else {
-            sort(objects, start as i32, end as i32, axis);
+            objects[start..end].sort_by(|a, b| {
+                if comparator(a, b) {
+                    std::cmp::Ordering::Less
+                } else {
+                    std::cmp::Ordering::Greater
+                }
+            });
 
             let mid = start + object_span / 2;
-            left1 = Some(Arc::new(BvhNode::new(objects, start, mid, time0, time1)));
-            right1 = Some(Arc::new(BvhNode::new(objects, mid, end, time0, time1)));
+            tmp.left = Some(Arc::new(BvhNode::new(objects, start, mid, time0, time1)));
+            tmp.right = Some(Arc::new(BvhNode::new(objects, mid, end, time0, time1)));
         }
 
         let mut box_left: Aabb = Aabb::new(Point3::new(0.0, 0.0, 0.0), Point3::new(0.0, 0.0, 0.0));
         let mut box_right: Aabb = Aabb::new(Point3::new(0.0, 0.0, 0.0), Point3::new(0.0, 0.0, 0.0));
 
-        if !left1
+        if !tmp.left
             .clone()
             .unwrap()
             .bounding_box(time0, time1, &mut box_left)
-            || !right1
+            || !tmp.right
                 .clone()
                 .unwrap()
                 .bounding_box(time0, time1, &mut box_right)
@@ -131,34 +114,30 @@ impl BvhNode {
 
         let box2 = Aabb::surrounding_box(&box_left, &box_right);
         Self {
-            left: left1,
-            right: right1,
+            left: tmp.left,
+            right: tmp.right,
             box1: box2,
         }
     }
 
     pub fn new1(list: &mut HittableList, time0: f64, time1: f64) -> Self {
         let length = list.objects.len();
-        BvhNode::new(&mut list.objects, 0, length, time0, time1)
+        BvhNode::new(&mut list.objects.clone(), 0, length, time0, time1)
     }
 }
 
 impl Hittable for BvhNode {
     fn bounding_box(&self, _time0: f64, _time1: f64, output_box: &mut Aabb) -> bool {
-        *output_box = (*self).clone().box1;
+        *output_box = (*self).box1.clone();
         true
     }
 
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
-        if (*self).clone().box1.hit(r, t_min, t_max) {
+        if !(*self).clone().box1.hit(r, t_min, t_max) {
             return false;
         }
         let hit_left = self.left.clone().unwrap().hit(r, t_min, t_max, &mut *rec);
-        let hit_right = if hit_left {
-            self.right.clone().unwrap().hit(r, t_min, rec.t, &mut *rec)
-        } else {
-            self.right.clone().unwrap().hit(r, t_min, t_max, &mut *rec)
-        };
+        let hit_right = self.right.clone().unwrap().hit(r,t_min,if hit_left {rec.t} else {t_max},rec);
 
         hit_left || hit_right
     }
