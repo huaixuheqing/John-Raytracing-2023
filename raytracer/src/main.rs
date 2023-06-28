@@ -547,7 +547,7 @@ fn main() {
     let mut aperture = 0.0;
     let mut background = Vec3::new(0.0, 0.0, 0.0);
 
-    match 0 {
+    match 1 {
         1 => {
             world = random_scene();
             background = Color1::new(0.70, 0.80, 1.00);
