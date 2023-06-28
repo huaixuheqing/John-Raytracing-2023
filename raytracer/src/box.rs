@@ -64,8 +64,8 @@ impl Box1 {
         ))));
 
         Self {
-            box_max: p1.clone(),
-            box_min: p0.clone(),
+            box_max: p1,
+            box_min: p0,
             sides: sides1,
         }
     }

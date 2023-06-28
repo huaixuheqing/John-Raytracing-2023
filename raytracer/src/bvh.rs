@@ -45,21 +45,21 @@ impl BvhNode {
     }
 
     pub fn new0() -> Self {
-        Self{
-            left:None,
-            right:None,
-            box1:Aabb::new(Point3::new(0.0,0.0,0.0),Point3::new(0.0,0.0,0.0)),
+        Self {
+            left: None,
+            right: None,
+            box1: Aabb::new(Point3::new(0.0, 0.0, 0.0), Point3::new(0.0, 0.0, 0.0)),
         }
     }
 
     pub fn new(
-        src_objects: &mut Vec<Option<Arc<dyn Hittable>>>,
+        src_objects: &mut [Option<Arc<dyn Hittable>>],
         start: usize,
         end: usize,
         time0: f64,
         time1: f64,
     ) -> Self {
-        let objects = &mut src_objects.clone();
+        let objects = &mut src_objects.to_owned();
 
         let axis = random_i32(0, 2);
         let comparator = if axis == 0 {
@@ -100,11 +100,13 @@ impl BvhNode {
         let mut box_left: Aabb = Aabb::new(Point3::new(0.0, 0.0, 0.0), Point3::new(0.0, 0.0, 0.0));
         let mut box_right: Aabb = Aabb::new(Point3::new(0.0, 0.0, 0.0), Point3::new(0.0, 0.0, 0.0));
 
-        if !tmp.left
+        if !tmp
+            .left
             .clone()
             .unwrap()
             .bounding_box(time0, time1, &mut box_left)
-            || !tmp.right
+            || !tmp
+                .right
                 .clone()
                 .unwrap()
                 .bounding_box(time0, time1, &mut box_right)
@@ -128,7 +130,7 @@ impl BvhNode {
 
 impl Hittable for BvhNode {
     fn bounding_box(&self, _time0: f64, _time1: f64, output_box: &mut Aabb) -> bool {
-        *output_box = (*self).box1.clone();
+        *output_box = self.box1.clone();
         true
     }
 
@@ -137,7 +139,11 @@ impl Hittable for BvhNode {
             return false;
         }
         let hit_left = self.left.clone().unwrap().hit(r, t_min, t_max, &mut *rec);
-        let hit_right = self.right.clone().unwrap().hit(r,t_min,if hit_left {rec.t} else {t_max},rec);
+        let hit_right =
+            self.right
+                .clone()
+                .unwrap()
+                .hit(r, t_min, if hit_left { rec.t } else { t_max }, rec);
 
         hit_left || hit_right
     }

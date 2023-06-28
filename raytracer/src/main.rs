@@ -418,7 +418,11 @@ fn final_scene() -> HittableList {
         for j in 0..20 {
             boxes1.add(Some(Arc::new(Box1::new(
                 Point3::new(-1000.0 + i as f64 * 100.0, 0.0, -1000.0 + j as f64 * 100.0),
-                Point3::new(-1000.0 + i as f64 * 100.0 + 100.0, random_f64_1(1.0, 101.0), -1000.0 + j as f64 * 100.0 + 100.0),
+                Point3::new(
+                    -1000.0 + i as f64 * 100.0 + 100.0,
+                    random_f64_1(1.0, 101.0),
+                    -1000.0 + j as f64 * 100.0 + 100.0,
+                ),
                 ground.clone(),
             ))));
         }
