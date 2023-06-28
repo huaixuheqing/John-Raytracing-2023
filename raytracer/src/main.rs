@@ -168,7 +168,9 @@ fn random_scene() -> HittableList {
         material3,
     ))));
 
-    world
+    let mut objects = HittableList::new();
+    objects.add(Some(Arc::new(BvhNode::new1(&mut world, 0.0, 1.0))));
+    objects
 }
 
 fn two_spheres() -> HittableList {
