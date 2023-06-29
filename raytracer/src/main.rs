@@ -25,7 +25,7 @@ use crate::rtweekend::random_f64_1;
 use crate::sphere::Sphere;
 use color::write_color;
 
-use image::{ImageBuffer, RgbImage};
+use image::ImageBuffer;
 use indicatif::ProgressBar;
 pub use rtweekend::degrees_to_radians;
 
@@ -631,7 +631,7 @@ fn main() {
             world = Arc::new(final_scene());
             aspect_ratio = 1.0;
             width = 800;
-            samples_per_pixel = 10;
+            samples_per_pixel = 1000;
             background = Color1::new(0.0, 0.0, 0.0);
             lookfrom = Point3::new(478.0, 278.0, -600.0);
             lookat = Point3::new(278.0, 278.0, 0.0);
@@ -641,7 +641,7 @@ fn main() {
 
     let height = (width as f64 / aspect_ratio) as usize;
     // Create image data
-    let mut img = Arc::new(Mutex::new(ImageBuffer::new(
+    let img = Arc::new(Mutex::new(ImageBuffer::new(
         width.try_into().unwrap(),
         height.try_into().unwrap(),
     )));
@@ -683,11 +683,11 @@ fn main() {
                         let u = (i as f64 + random_f64()) / (width - 1) as f64;
                         let v = (j as f64 + random_f64()) / (height - 1) as f64;
                         let r = cam.get_ray(u, v);
-                        pixel_color += ray_color(&r, &background, &*world, max_depth);
+                        pixel_color += ray_color(&r, &background, &world, max_depth);
                     }
                     write_color(
                         &pixel_color,
-                        &mut *img.lock().unwrap(),
+                        &mut img.lock().unwrap(),
                         i,
                         height - j - 1,
                         samples_per_pixel,
