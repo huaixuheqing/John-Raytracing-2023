@@ -6,6 +6,7 @@ pub use rtweekend::degrees_to_radians;
 pub use vec3::Point3;
 pub use vec3::Vec3;
 
+#[derive(Copy, Clone)]
 pub struct Camera {
     origin: Point3,
     lower_left_corner: Point3,

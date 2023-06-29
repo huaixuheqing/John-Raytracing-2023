@@ -11,11 +11,11 @@ use std::sync::Arc;
 pub struct Sphere {
     pub center: Point3,
     pub radius: f64,
-    pub mat_ptr: Option<Arc<dyn Material>>,
+    pub mat_ptr: Option<Arc<dyn Material + Send + Sync>>,
 }
 
 impl Sphere {
-    pub fn new(cen: Point3, r: f64, m: Option<Arc<dyn Material>>) -> Self {
+    pub fn new(cen: Point3, r: f64, m: Option<Arc<dyn Material + Send + Sync>>) -> Self {
         Self {
             center: cen,
             radius: r,

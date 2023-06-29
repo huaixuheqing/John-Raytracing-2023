@@ -11,7 +11,7 @@ use std::sync::Arc;
 pub struct HitRecord {
     pub p: Point3,
     pub normal: Vec3,
-    pub mat_ptr: Option<Arc<dyn Material>>,
+    pub mat_ptr: Option<Arc<dyn Material + Send + Sync>>,
     pub t: f64,
     pub u: f64,
     pub v: f64,
@@ -53,12 +53,12 @@ pub trait Hittable {
 }
 
 pub struct Translate {
-    ptr: Option<Arc<dyn Hittable>>,
+    ptr: Option<Arc<dyn Hittable + Send + Sync>>,
     offset: Vec3,
 }
 
 impl Translate {
-    pub fn new(p: Option<Arc<dyn Hittable>>, displacement: &Vec3) -> Self {
+    pub fn new(p: Option<Arc<dyn Hittable + Send + Sync>>, displacement: &Vec3) -> Self {
         Self {
             ptr: p,
             offset: *displacement,
@@ -98,7 +98,7 @@ impl Hittable for Translate {
 
 #[derive(Clone)]
 pub struct RotateY {
-    ptr: Option<Arc<dyn Hittable>>,
+    ptr: Option<Arc<dyn Hittable + Send + Sync>>,
     sin_theta: f64,
     cos_theta: f64,
     hasbox: bool,
@@ -106,7 +106,7 @@ pub struct RotateY {
 }
 
 impl RotateY {
-    pub fn new(p: Option<Arc<dyn Hittable>>, angle: f64) -> Self {
+    pub fn new(p: Option<Arc<dyn Hittable + Send + Sync>>, angle: f64) -> Self {
         let radians = degrees_to_radians(angle);
         let sin_theta1 = radians.sin();
         let cos_theta1 = radians.cos();

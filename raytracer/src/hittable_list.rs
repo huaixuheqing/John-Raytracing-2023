@@ -8,7 +8,7 @@ pub use std::vec;
 
 #[derive(Clone)]
 pub struct HittableList {
-    pub objects: Vec<Option<Arc<dyn Hittable>>>,
+    pub objects: Vec<Option<Arc<dyn Hittable + Send + Sync>>>,
 }
 
 impl Default for HittableList {
@@ -28,7 +28,7 @@ impl HittableList {
         self.objects.clear();
     }
 
-    pub fn add(&mut self, object: Option<Arc<dyn Hittable>>) {
+    pub fn add(&mut self, object: Option<Arc<dyn Hittable + Send + Sync>>) {
         self.objects.push(object);
     }
 

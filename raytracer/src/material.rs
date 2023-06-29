@@ -21,7 +21,7 @@ pub trait Material {
 }
 
 pub struct Lambertian {
-    albedo: Option<Arc<dyn Texture>>,
+    albedo: Option<Arc<dyn Texture + Send + Sync>>,
 }
 
 impl Lambertian {
@@ -30,7 +30,7 @@ impl Lambertian {
             albedo: Some(Arc::new(SolidColor::new(*a))),
         }
     }
-    pub fn new1(a: Option<Arc<dyn Texture>>) -> Self {
+    pub fn new1(a: Option<Arc<dyn Texture + Send + Sync>>) -> Self {
         Self { albedo: a }
     }
 }
@@ -158,11 +158,11 @@ impl Material for Dielectric {
 }
 
 pub struct DiffuseLight {
-    emit: Option<Arc<dyn Texture>>,
+    emit: Option<Arc<dyn Texture + Send + Sync>>,
 }
 
 impl DiffuseLight {
-    /*pub fn new(a: Option<Arc<dyn Texture>>) -> Self {
+    /*pub fn new(a: Option<Arc<dyn Texture + Send + Sync>>) -> Self {
         Self { emit: a }
     }*/
 
@@ -190,7 +190,7 @@ impl Material for DiffuseLight {
 }
 
 pub struct Isotropic {
-    albedo: Option<Arc<dyn Texture>>,
+    albedo: Option<Arc<dyn Texture + Send + Sync>>,
 }
 
 impl Isotropic {
@@ -200,7 +200,7 @@ impl Isotropic {
         }
     }
 
-    /*    pub fn new1(a:Option<Arc<dyn Texture>>) -> Self {
+    /*    pub fn new1(a:Option<Arc<dyn Texture + Send + Sync>>) -> Self {
         Self{
             albedo:a,
         }

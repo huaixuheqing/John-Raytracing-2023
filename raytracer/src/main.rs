@@ -1,4 +1,6 @@
 const INFINITY: f64 = f64::INFINITY;
+use std::sync::Mutex;
+use std::thread;
 
 mod aabb;
 mod aarect;
@@ -99,7 +101,7 @@ fn ray_color(r: &Ray, background: &Color1, world: &HittableList, depth: i32) -> 
 fn random_scene() -> HittableList {
     let mut world = HittableList::new();
 
-    let checker: Option<Arc<dyn Texture>> = Some(Arc::new(CheckerTexture::new1(
+    let checker: Option<Arc<dyn Texture + Send + Sync>> = Some(Arc::new(CheckerTexture::new1(
         Color1::new(0.2, 0.3, 0.1),
         Color1::new(0.9, 0.9, 0.9),
     )));
@@ -119,7 +121,7 @@ fn random_scene() -> HittableList {
             );
 
             if (center - Point3::new(4.0, 0.2, 0.0)).length() > 0.9 {
-                let sphere_material: Option<Arc<dyn Material>>;
+                let sphere_material: Option<Arc<dyn Material + Send + Sync>>;
 
                 if choose_mat < 0.8 {
                     let albedo = Color1::random().elemul(Color1::random());
@@ -145,14 +147,14 @@ fn random_scene() -> HittableList {
             }
         }
     }
-    let material1: Option<Arc<dyn Material>> = Some(Arc::new(Dielectric::new(1.5)));
+    let material1: Option<Arc<dyn Material + Send + Sync>> = Some(Arc::new(Dielectric::new(1.5)));
     world.add(Some(Arc::new(Sphere::new(
         Point3::new(0.0, 1.0, 0.0),
         1.0,
         material1,
     ))));
 
-    let material2: Option<Arc<dyn Material>> =
+    let material2: Option<Arc<dyn Material + Send + Sync>> =
         Some(Arc::new(Lambertian::new(&Color1::new(0.4, 0.2, 0.1))));
     world.add(Some(Arc::new(Sphere::new(
         Point3::new(-4.0, 1.0, 0.0),
@@ -160,7 +162,7 @@ fn random_scene() -> HittableList {
         material2,
     ))));
 
-    let material3: Option<Arc<dyn Material>> =
+    let material3: Option<Arc<dyn Material + Send + Sync>> =
         Some(Arc::new(Medal::new(&Color1::new(0.7, 0.6, 0.5), 0.0)));
     world.add(Some(Arc::new(Sphere::new(
         Point3::new(4.0, 1.0, 0.0),
@@ -175,7 +177,7 @@ fn random_scene() -> HittableList {
 
 fn two_spheres() -> HittableList {
     let mut objects = HittableList::new();
-    let checker: Option<Arc<dyn Texture>> = Some(Arc::new(CheckerTexture::new1(
+    let checker: Option<Arc<dyn Texture + Send + Sync>> = Some(Arc::new(CheckerTexture::new1(
         Color1::new(0.2, 0.3, 0.1),
         Color1::new(0.9, 0.9, 0.9),
     )));
@@ -195,7 +197,7 @@ fn two_spheres() -> HittableList {
 fn two_perlin_spheres() -> HittableList {
     let mut objects = HittableList::new();
 
-    let pertext: Option<Arc<dyn Texture>> = Some(Arc::new(NoiseTexture::new(4.0)));
+    let pertext: Option<Arc<dyn Texture + Send + Sync>> = Some(Arc::new(NoiseTexture::new(4.0)));
     objects.add(Some(Arc::new(Sphere::new(
         Point3::new(0.0, -1000.0, 0.0),
         1000.0,
@@ -211,9 +213,11 @@ fn two_perlin_spheres() -> HittableList {
 
 fn earth() -> HittableList {
     let mut world = HittableList::new();
-    let earth_texture: Option<Arc<dyn Texture>> = Some(Arc::new(ImageTecture::new("earthmap.jpg")));
-    let earth_surface: Option<Arc<dyn Material>> = Some(Arc::new(Lambertian::new1(earth_texture)));
-    let globe: Option<Arc<dyn Hittable>> = Some(Arc::new(Sphere::new(
+    let earth_texture: Option<Arc<dyn Texture + Send + Sync>> =
+        Some(Arc::new(ImageTecture::new("earthmap.jpg")));
+    let earth_surface: Option<Arc<dyn Material + Send + Sync>> =
+        Some(Arc::new(Lambertian::new1(earth_texture)));
+    let globe: Option<Arc<dyn Hittable + Send + Sync>> = Some(Arc::new(Sphere::new(
         Point3::new(0.0, 0.0, 0.0),
         2.0,
         earth_surface,
@@ -226,7 +230,7 @@ fn earth() -> HittableList {
 fn simple_light() -> HittableList {
     let mut objects = HittableList::new();
 
-    let pertext: Option<Arc<dyn Texture>> = Some(Arc::new(NoiseTexture::new(4.0)));
+    let pertext: Option<Arc<dyn Texture + Send + Sync>> = Some(Arc::new(NoiseTexture::new(4.0)));
     objects.add(Some(Arc::new(Sphere::new(
         Point3::new(0.0, -1000.0, 0.0),
         1000.0,
@@ -238,10 +242,20 @@ fn simple_light() -> HittableList {
         Some(Arc::new(Lambertian::new1(pertext))),
     ))));
 
-    let difflight: Option<Arc<dyn Material>> =
+    let difflight: Option<Arc<dyn Material + Send + Sync>> =
         Some(Arc::new(DiffuseLight::new1(Color1::new(4.0, 4.0, 4.0))));
     objects.add(Some(Arc::new(XyRect::new(
-        3.0, 5.0, 1.0, 3.0, -2.0, difflight,
+        3.0,
+        5.0,
+        1.0,
+        3.0,
+        -2.0,
+        difflight.clone(),
+    ))));
+    objects.add(Some(Arc::new(Sphere::new(
+        Point3::new(0.0, 7.0, 0.0),
+        2.0,
+        difflight.clone(),
     ))));
 
     objects
@@ -250,13 +264,13 @@ fn simple_light() -> HittableList {
 fn cornell_box() -> HittableList {
     let mut objects = HittableList::new();
 
-    let red: Option<Arc<dyn Material>> =
+    let red: Option<Arc<dyn Material + Send + Sync>> =
         Some(Arc::new(Lambertian::new(&Color1::new(0.65, 0.05, 0.05))));
-    let white: Option<Arc<dyn Material>> =
+    let white: Option<Arc<dyn Material + Send + Sync>> =
         Some(Arc::new(Lambertian::new(&Color1::new(0.73, 0.73, 0.73))));
-    let green: Option<Arc<dyn Material>> =
+    let green: Option<Arc<dyn Material + Send + Sync>> =
         Some(Arc::new(Lambertian::new(&Color1::new(0.12, 0.45, 0.15))));
-    let light: Option<Arc<dyn Material>> =
+    let light: Option<Arc<dyn Material + Send + Sync>> =
         Some(Arc::new(DiffuseLight::new1(Color1::new(15.0, 15.0, 15.0))));
 
     objects.add(Some(Arc::new(YzRect::new(
@@ -293,7 +307,7 @@ fn cornell_box() -> HittableList {
         white.clone(),
     ))));
 
-    let mut box1: Option<Arc<dyn Hittable>> = Some(Arc::new(Box1::new(
+    let mut box1: Option<Arc<dyn Hittable + Send + Sync>> = Some(Arc::new(Box1::new(
         Point3::new(0.0, 0.0, 0.0),
         Point3::new(165.0, 330.0, 165.0),
         white.clone(),
@@ -305,7 +319,7 @@ fn cornell_box() -> HittableList {
     )));
     objects.add(box1);
 
-    let mut box2: Option<Arc<dyn Hittable>> = Some(Arc::new(Box1::new(
+    let mut box2: Option<Arc<dyn Hittable + Send + Sync>> = Some(Arc::new(Box1::new(
         Point3::new(0.0, 0.0, 0.0),
         Point3::new(165.0, 165.0, 165.0),
         white.clone(),
@@ -320,13 +334,13 @@ fn cornell_box() -> HittableList {
 fn cornell_smoke() -> HittableList {
     let mut objects = HittableList::new();
 
-    let red: Option<Arc<dyn Material>> =
+    let red: Option<Arc<dyn Material + Send + Sync>> =
         Some(Arc::new(Lambertian::new(&Color1::new(0.65, 0.05, 0.05))));
-    let white: Option<Arc<dyn Material>> =
+    let white: Option<Arc<dyn Material + Send + Sync>> =
         Some(Arc::new(Lambertian::new(&Color1::new(0.73, 0.73, 0.73))));
-    let green: Option<Arc<dyn Material>> =
+    let green: Option<Arc<dyn Material + Send + Sync>> =
         Some(Arc::new(Lambertian::new(&Color1::new(0.12, 0.45, 0.15))));
-    let light: Option<Arc<dyn Material>> =
+    let light: Option<Arc<dyn Material + Send + Sync>> =
         Some(Arc::new(DiffuseLight::new1(Color1::new(7.0, 7.0, 7.0))));
 
     objects.add(Some(Arc::new(YzRect::new(
@@ -377,7 +391,7 @@ fn cornell_smoke() -> HittableList {
         555.0,
         white.clone(),
     ))));
-    let mut box1: Option<Arc<dyn Hittable>> = Some(Arc::new(Box1::new(
+    let mut box1: Option<Arc<dyn Hittable + Send + Sync>> = Some(Arc::new(Box1::new(
         Point3::new(0.0, 0.0, 0.0),
         Point3::new(165.0, 330.0, 165.0),
         white.clone(),
@@ -388,7 +402,7 @@ fn cornell_smoke() -> HittableList {
         &Vec3::new(265.0, 0.0, 295.0),
     )));
 
-    let mut box2: Option<Arc<dyn Hittable>> = Some(Arc::new(Box1::new(
+    let mut box2: Option<Arc<dyn Hittable + Send + Sync>> = Some(Arc::new(Box1::new(
         Point3::new(0.0, 0.0, 0.0),
         Point3::new(165.0, 165.0, 165.0),
         white.clone(),
@@ -413,7 +427,7 @@ fn cornell_smoke() -> HittableList {
 fn final_scene() -> HittableList {
     let mut boxes1 = HittableList::new();
     let mut objects = HittableList::new();
-    let ground: Option<Arc<dyn Material>> =
+    let ground: Option<Arc<dyn Material + Send + Sync>> =
         Some(Arc::new(Lambertian::new(&Color1::new(0.48, 0.83, 0.53))));
 
     for i in 0..20 {
@@ -432,7 +446,7 @@ fn final_scene() -> HittableList {
 
     objects.add(Some(Arc::new(BvhNode::new1(&mut boxes1, 0.0, 1.0))));
 
-    let light: Option<Arc<dyn Material>> =
+    let light: Option<Arc<dyn Material + Send + Sync>> =
         Some(Arc::new(DiffuseLight::new1(Color1::new(7.0, 7.0, 7.0))));
     objects.add(Some(Arc::new(XzRect::new(
         123.0,
@@ -445,7 +459,7 @@ fn final_scene() -> HittableList {
 
     let center1 = Point3::new(400.0, 400.0, 200.0);
     let center2 = center1 + Vec3::new(30.0, 0.0, 0.0);
-    let moving_sphere_material: Option<Arc<dyn Material>> =
+    let moving_sphere_material: Option<Arc<dyn Material + Send + Sync>> =
         Some(Arc::new(Lambertian::new(&Color1::new(0.7, 0.3, 0.1))));
     objects.add(Some(Arc::new(MovingSphere::new(
         center1,
@@ -467,7 +481,7 @@ fn final_scene() -> HittableList {
         Some(Arc::new(Medal::new(&Color1::new(0.8, 0.8, 0.9), 1.0))),
     ))));
 
-    let mut boundary: Option<Arc<dyn Hittable>> = Some(Arc::new(Sphere::new(
+    let mut boundary: Option<Arc<dyn Hittable + Send + Sync>> = Some(Arc::new(Sphere::new(
         Point3::new(360.0, 150.0, 145.0),
         70.0,
         Some(Arc::new(Dielectric::new(1.5))),
@@ -489,15 +503,15 @@ fn final_scene() -> HittableList {
         Color1::new(1.0, 1.0, 1.0),
     ))));
 
-    let emat: Option<Arc<dyn Material>> = Some(Arc::new(Lambertian::new1(Some(Arc::new(
-        ImageTecture::new("earthmap.jpg"),
-    )))));
+    let emat: Option<Arc<dyn Material + Send + Sync>> = Some(Arc::new(Lambertian::new1(Some(
+        Arc::new(ImageTecture::new("earthmap.jpg")),
+    ))));
     objects.add(Some(Arc::new(Sphere::new(
         Point3::new(400.0, 200.0, 400.0),
         100.0,
         emat,
     ))));
-    let pertext: Option<Arc<dyn Texture>> = Some(Arc::new(NoiseTexture::new(0.1)));
+    let pertext: Option<Arc<dyn Texture + Send + Sync>> = Some(Arc::new(NoiseTexture::new(0.1)));
     objects.add(Some(Arc::new(Sphere::new(
         Point3::new(220.0, 280.0, 300.0),
         80.0,
@@ -505,7 +519,7 @@ fn final_scene() -> HittableList {
     ))));
 
     let mut boxes2 = HittableList::new();
-    let white: Option<Arc<dyn Material>> =
+    let white: Option<Arc<dyn Material + Send + Sync>> =
         Some(Arc::new(Lambertian::new(&Color1::new(0.73, 0.73, 0.73))));
     let ns = 1000;
     for _j in 0..ns {
@@ -549,9 +563,9 @@ fn main() {
     let mut aperture = 0.0;
     let mut background = Vec3::new(0.0, 0.0, 0.0);
 
-    match 1 {
+    match 0 {
         1 => {
-            world = random_scene();
+            world = Arc::new(random_scene());
             background = Color1::new(0.70, 0.80, 1.00);
             lookfrom = Point3::new(13.0, 2.0, 3.0);
             lookat = Point3::new(0.0, 0.0, 0.0);
@@ -560,7 +574,7 @@ fn main() {
         }
 
         2 => {
-            world = two_spheres();
+            world = Arc::new(two_spheres());
             background = Color1::new(0.70, 0.80, 1.00);
             lookfrom = Point3::new(13.0, 2.0, 3.0);
             lookat = Point3::new(0.0, 0.0, 0.0);
@@ -568,7 +582,7 @@ fn main() {
         }
 
         3 => {
-            world = two_perlin_spheres();
+            world = Arc::new(two_perlin_spheres());
             background = Color1::new(0.70, 0.80, 1.00);
             lookfrom = Point3::new(13.0, 2.0, 3.0);
             lookat = Point3::new(0.0, 0.0, 0.0);
@@ -576,7 +590,7 @@ fn main() {
         }
 
         4 => {
-            world = earth();
+            world = Arc::new(earth());
             background = Color1::new(0.70, 0.80, 1.00);
             lookfrom = Point3::new(13.0, 2.0, 3.0);
             lookat = Point3::new(0.0, 0.0, 0.0);
@@ -584,7 +598,7 @@ fn main() {
         }
 
         5 => {
-            world = simple_light();
+            world = Arc::new(simple_light());
             samples_per_pixel = 400;
             background = Color1::new(0.0, 0.0, 0.0);
             lookfrom = Point3::new(26.0, 3.0, 6.0);
@@ -593,7 +607,7 @@ fn main() {
         }
 
         6 => {
-            world = cornell_box();
+            world = Arc::new(cornell_box());
             aspect_ratio = 1.0;
             width = 600;
             samples_per_pixel = 200;
@@ -604,7 +618,7 @@ fn main() {
         }
 
         7 => {
-            world = cornell_smoke();
+            world = Arc::new(cornell_smoke());
             aspect_ratio = 1.0;
             width = 600;
             samples_per_pixel = 200;
@@ -614,10 +628,10 @@ fn main() {
         }
 
         _ => {
-            world = final_scene();
+            world = Arc::new(final_scene());
             aspect_ratio = 1.0;
             width = 800;
-            samples_per_pixel = 1000;
+            samples_per_pixel = 10;
             background = Color1::new(0.0, 0.0, 0.0);
             lookfrom = Point3::new(478.0, 278.0, -600.0);
             lookat = Point3::new(278.0, 278.0, 0.0);
@@ -627,15 +641,18 @@ fn main() {
 
     let height = (width as f64 / aspect_ratio) as usize;
     // Create image data
-    let mut img: RgbImage = ImageBuffer::new(width.try_into().unwrap(), height.try_into().unwrap());
+    let mut img = Arc::new(Mutex::new(ImageBuffer::new(
+        width.try_into().unwrap(),
+        height.try_into().unwrap(),
+    )));
 
     // Progress bar UI powered by library `indicatif`
-    // You can use indicatif::ProgressStyle to make it more beautiful
+    // You can use indicatif::ProgressStyle to make it more beautiful)
     // You can also use indicatif::MultiProgress in multi-threading to show progress of each thread
     let bar = if is_ci {
-        ProgressBar::hidden()
+        Arc::new(ProgressBar::hidden())
     } else {
-        ProgressBar::new((height * width) as u64)
+        Arc::new(ProgressBar::new((height * width) as u64))
     };
 
     // Camera
@@ -652,18 +669,37 @@ fn main() {
         (dist_to_focus, 0.0, 1.0),
     );
 
-    for j in 0..height {
-        for i in 0..width {
-            let mut pixel_color = Color1::new(0.0, 0.0, 0.0);
-            for _s in 0..samples_per_pixel {
-                let u = (i as f64 + random_f64()) / (width - 1) as f64;
-                let v = (j as f64 + random_f64()) / (height - 1) as f64;
-                let r = cam.get_ray(u, v);
-                pixel_color += ray_color(&r, &background, &world, max_depth);
+    let mut handles = vec![];
+    let thread_number = 20;
+    for t in 0..thread_number {
+        let world = Arc::clone(&world);
+        let img = Arc::clone(&img);
+        let bar = Arc::clone(&bar);
+        let handle = thread::spawn(move || {
+            for j in (t * height / thread_number)..((t + 1) * height / thread_number) {
+                for i in 0..width {
+                    let mut pixel_color = Color1::new(0.0, 0.0, 0.0);
+                    for _s in 0..samples_per_pixel {
+                        let u = (i as f64 + random_f64()) / (width - 1) as f64;
+                        let v = (j as f64 + random_f64()) / (height - 1) as f64;
+                        let r = cam.get_ray(u, v);
+                        pixel_color += ray_color(&r, &background, &*world, max_depth);
+                    }
+                    write_color(
+                        &pixel_color,
+                        &mut *img.lock().unwrap(),
+                        i,
+                        height - j - 1,
+                        samples_per_pixel,
+                    );
+                    bar.inc(1);
+                }
             }
-            write_color(&pixel_color, &mut img, i, height - j - 1, samples_per_pixel);
-            bar.inc(1);
-        }
+        });
+        handles.push(handle);
+    }
+    for handle in handles {
+        handle.join().unwrap();
     }
 
     // Finish progress bar
@@ -671,7 +707,8 @@ fn main() {
 
     // Output image to file
     println!("Output image as \"{}\"\n Author: {}", path, AUTHOR);
-    let output_image = image::DynamicImage::ImageRgb8(img);
+    let output_image =
+        image::DynamicImage::ImageRgb8(Mutex::into_inner(Arc::into_inner(img).unwrap()).unwrap());
     let mut output_file = File::create(path).unwrap();
     match output_image.write_to(&mut output_file, image::ImageOutputFormat::Jpeg(quality)) {
         Ok(_) => {}

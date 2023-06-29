@@ -5,13 +5,13 @@ use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct ConstantMedium {
-    boundary: Option<Arc<dyn Hittable>>,
-    phase_function: Option<Arc<dyn Material>>,
+    boundary: Option<Arc<dyn Hittable + Send + Sync>>,
+    phase_function: Option<Arc<dyn Material + Send + Sync>>,
     neg_inv_density: f64,
 }
 
 impl ConstantMedium {
-    /*    pub fn new(b:Option<Arc<dyn Hittable>>, d:f64, a:Option<Arc<dyn Texture>>) -> Self {
+    /*    pub fn new(b:Option<Arc<dyn Hittable + Send + Sync>>, d:f64, a:Option<Arc<dyn Texture + Send + Sync>>) -> Self {
         Self{
             boundary:b,
             neg_inv_density:-1.0/d,
@@ -19,7 +19,7 @@ impl ConstantMedium {
         }
     }*/
 
-    pub fn new1(b: Option<Arc<dyn Hittable>>, d: f64, c: Color1) -> Self {
+    pub fn new1(b: Option<Arc<dyn Hittable + Send + Sync>>, d: f64, c: Color1) -> Self {
         Self {
             boundary: b,
             neg_inv_density: -1.0 / d,

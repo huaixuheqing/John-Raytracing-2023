@@ -9,15 +9,15 @@ pub use vec3::Vec3;
 
 #[derive(Clone)]
 pub struct BvhNode {
-    left: Option<Arc<dyn Hittable>>,
-    right: Option<Arc<dyn Hittable>>,
+    left: Option<Arc<dyn Hittable + Send + Sync>>,
+    right: Option<Arc<dyn Hittable + Send + Sync>>,
     box1: Aabb,
 }
 
 impl BvhNode {
     pub fn box_compare(
-        a: &Option<Arc<dyn Hittable>>,
-        b: &Option<Arc<dyn Hittable>>,
+        a: &Option<Arc<dyn Hittable + Send + Sync>>,
+        b: &Option<Arc<dyn Hittable + Send + Sync>>,
         axis: i32,
     ) -> bool {
         let mut box_a: Aabb = Aabb::new(Point3::new(0.0, 0.0, 0.0), Point3::new(0.0, 0.0, 0.0));
@@ -32,15 +32,24 @@ impl BvhNode {
         box_a.min()[axis as usize] < box_b.min()[axis as usize]
     }
 
-    pub fn box_x_compare(a: &Option<Arc<dyn Hittable>>, b: &Option<Arc<dyn Hittable>>) -> bool {
+    pub fn box_x_compare(
+        a: &Option<Arc<dyn Hittable + Send + Sync>>,
+        b: &Option<Arc<dyn Hittable + Send + Sync>>,
+    ) -> bool {
         BvhNode::box_compare(a, b, 0)
     }
 
-    pub fn box_y_compare(a: &Option<Arc<dyn Hittable>>, b: &Option<Arc<dyn Hittable>>) -> bool {
+    pub fn box_y_compare(
+        a: &Option<Arc<dyn Hittable + Send + Sync>>,
+        b: &Option<Arc<dyn Hittable + Send + Sync>>,
+    ) -> bool {
         BvhNode::box_compare(a, b, 1)
     }
 
-    pub fn box_z_compare(a: &Option<Arc<dyn Hittable>>, b: &Option<Arc<dyn Hittable>>) -> bool {
+    pub fn box_z_compare(
+        a: &Option<Arc<dyn Hittable + Send + Sync>>,
+        b: &Option<Arc<dyn Hittable + Send + Sync>>,
+    ) -> bool {
         BvhNode::box_compare(a, b, 2)
     }
 
@@ -53,7 +62,7 @@ impl BvhNode {
     }
 
     pub fn new(
-        src_objects: &mut [Option<Arc<dyn Hittable>>],
+        src_objects: &mut [Option<Arc<dyn Hittable + Send + Sync>>],
         start: usize,
         end: usize,
         time0: f64,

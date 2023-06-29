@@ -5,7 +5,7 @@ use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct XyRect {
-    mp: Option<Arc<dyn Material>>,
+    mp: Option<Arc<dyn Material + Send + Sync>>,
     x0: f64,
     x1: f64,
     y0: f64,
@@ -20,7 +20,7 @@ impl XyRect {
         _y0: f64,
         _y1: f64,
         _k: f64,
-        mat: Option<Arc<dyn Material>>,
+        mat: Option<Arc<dyn Material + Send + Sync>>,
     ) -> Self {
         Self {
             x0: _x0,
@@ -66,7 +66,7 @@ impl Hittable for XyRect {
 
 #[derive(Clone)]
 pub struct XzRect {
-    mp: Option<Arc<dyn Material>>,
+    mp: Option<Arc<dyn Material + Send + Sync>>,
     x0: f64,
     x1: f64,
     z0: f64,
@@ -81,7 +81,7 @@ impl XzRect {
         _z0: f64,
         _z1: f64,
         _k: f64,
-        mat: Option<Arc<dyn Material>>,
+        mat: Option<Arc<dyn Material + Send + Sync>>,
     ) -> Self {
         Self {
             x0: _x0,
@@ -127,7 +127,7 @@ impl Hittable for XzRect {
 
 #[derive(Clone)]
 pub struct YzRect {
-    mp: Option<Arc<dyn Material>>,
+    mp: Option<Arc<dyn Material + Send + Sync>>,
     y0: f64,
     y1: f64,
     z0: f64,
@@ -142,7 +142,7 @@ impl YzRect {
         _z0: f64,
         _z1: f64,
         _k: f64,
-        mat: Option<Arc<dyn Material>>,
+        mat: Option<Arc<dyn Material + Send + Sync>>,
     ) -> Self {
         Self {
             y0: _y0,

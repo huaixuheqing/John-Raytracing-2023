@@ -10,7 +10,7 @@ pub struct Box1 {
 }
 
 impl Box1 {
-    pub fn new(p0: Point3, p1: Point3, ptr: Option<Arc<dyn Material>>) -> Self {
+    pub fn new(p0: Point3, p1: Point3, ptr: Option<Arc<dyn Material + Send + Sync>>) -> Self {
         let mut sides1 = HittableList::new();
         sides1.add(Some(Arc::new(XyRect::new(
             p0.x,
