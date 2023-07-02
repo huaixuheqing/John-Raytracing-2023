@@ -42,7 +42,7 @@ pub use camera::Camera;
 pub use hittable::HitRecord;
 pub use hittable::Hittable;
 pub use hittable_list::HittableList;
-use image::ImageFormat::Jpeg;
+
 pub use material::Dielectric;
 pub use material::Lambertian;
 pub use material::Material;
