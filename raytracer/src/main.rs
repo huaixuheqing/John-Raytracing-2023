@@ -1,6 +1,7 @@
 const INFINITY: f64 = f64::INFINITY;
 use std::sync::Mutex;
 use std::thread;
+use std::time::{Duration, Instant};
 
 mod aabb;
 mod aarect;
@@ -49,6 +50,7 @@ pub use moving_sphere::MovingSphere;
 pub use ray::Ray;
 pub use std::sync::Arc;
 pub use std::vec;
+use image::ImageFormat::Jpeg;
 
 use crate::bvh::BvhNode;
 use crate::constant_medium::ConstantMedium;
@@ -551,7 +553,7 @@ fn main() {
     let mut aspect_ratio = 16.0 / 9.0;
     let mut width: usize = 400;
     let path = "output/test.jpg";
-    let quality = 60; // From 0 to 100, suggested value: 60
+    let quality = 100; // From 0 to 100, suggested value: 60
     let mut samples_per_pixel = 100;
     let max_depth = 50;
 
@@ -631,7 +633,7 @@ fn main() {
             world = Arc::new(final_scene());
             aspect_ratio = 1.0;
             width = 800;
-            samples_per_pixel = 1000;
+            samples_per_pixel = 50;
             background = Color1::new(0.0, 0.0, 0.0);
             lookfrom = Point3::new(478.0, 278.0, -600.0);
             lookat = Point3::new(278.0, 278.0, 0.0);
@@ -669,13 +671,25 @@ fn main() {
         (dist_to_focus, 0.0, 1.0),
     );
 
+    println!("Image size: {}x{}",width,height);
+    println!("JPEG quality: {}",quality);
+    println!("Samples per pixel: {}",samples_per_pixel);
+    println!("Reflection max depth: {}",max_depth);
+
     let mut handles = vec![];
-    let thread_number = 20;
+    let thread_number = 15;
+
+    println!("Rendering with {} Threads",thread_number);
+    let start = Instant::now();
+    let timers = Arc::new(Mutex::new(vec![Duration::default();thread_number]));
+
     for t in 0..thread_number {
         let world = Arc::clone(&world);
         let img = Arc::clone(&img);
         let bar = Arc::clone(&bar);
+        let timers_clone = Arc::clone(&timers);
         let handle = thread::spawn(move || {
+            let start_time = Instant::now();
             for j in (t * height / thread_number)..((t + 1) * height / thread_number) {
                 for i in 0..width {
                     let mut pixel_color = Color1::new(0.0, 0.0, 0.0);
@@ -695,6 +709,8 @@ fn main() {
                     bar.inc(1);
                 }
             }
+            let mut timer = timers_clone.lock().unwrap();
+            *timer.get_mut(t).unwrap() = start_time.elapsed();
         });
         handles.push(handle);
     }
@@ -704,6 +720,14 @@ fn main() {
 
     // Finish progress bar
     bar.finish();
+
+    let timers = timers.lock().unwrap();
+    for (i ,timer) in timers.iter().enumerate() {
+        println!("thread {} 运行时间 : {:?}",i,timer);
+    }
+
+    let total_duration = start.elapsed();
+    println!("总体运行时间: {:?}",total_duration);
 
     // Output image to file
     println!("Output image as \"{}\"\n Author: {}", path, AUTHOR);
