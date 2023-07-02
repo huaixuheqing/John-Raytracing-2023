@@ -42,6 +42,7 @@ pub use camera::Camera;
 pub use hittable::HitRecord;
 pub use hittable::Hittable;
 pub use hittable_list::HittableList;
+use image::ImageFormat::Jpeg;
 pub use material::Dielectric;
 pub use material::Lambertian;
 pub use material::Material;
@@ -50,7 +51,6 @@ pub use moving_sphere::MovingSphere;
 pub use ray::Ray;
 pub use std::sync::Arc;
 pub use std::vec;
-use image::ImageFormat::Jpeg;
 
 use crate::bvh::BvhNode;
 use crate::constant_medium::ConstantMedium;
@@ -671,17 +671,17 @@ fn main() {
         (dist_to_focus, 0.0, 1.0),
     );
 
-    println!("Image size: {}x{}",width,height);
-    println!("JPEG quality: {}",quality);
-    println!("Samples per pixel: {}",samples_per_pixel);
-    println!("Reflection max depth: {}",max_depth);
+    println!("Image size: {}x{}", width, height);
+    println!("JPEG quality: {}", quality);
+    println!("Samples per pixel: {}", samples_per_pixel);
+    println!("Reflection max depth: {}", max_depth);
 
     let mut handles = vec![];
     let thread_number = 15;
 
-    println!("Rendering with {} Threads",thread_number);
+    println!("Rendering with {} Threads", thread_number);
     let start = Instant::now();
-    let timers = Arc::new(Mutex::new(vec![Duration::default();thread_number]));
+    let timers = Arc::new(Mutex::new(vec![Duration::default(); thread_number]));
 
     for t in 0..thread_number {
         let world = Arc::clone(&world);
@@ -722,12 +722,12 @@ fn main() {
     bar.finish();
 
     let timers = timers.lock().unwrap();
-    for (i ,timer) in timers.iter().enumerate() {
-        println!("thread {} 运行时间 : {:?}",i,timer);
+    for (i, timer) in timers.iter().enumerate() {
+        println!("thread {} 运行时间 : {:?}", i, timer);
     }
 
     let total_duration = start.elapsed();
-    println!("总体运行时间: {:?}",total_duration);
+    println!("总体运行时间: {:?}", total_duration);
 
     // Output image to file
     println!("Output image as \"{}\"\n Author: {}", path, AUTHOR);
